@@ -16,21 +16,26 @@ public class CalculateDataTask
     @Autowired
     private ReportDao reportDao;
 
-    //做个请求写到redis列表 循环要清算的appId
-    private String appId = "1";
+    //report apps
+    private String[] appList = new String[]{"1"};
 
     //更新日报数据
     //@Scheduled(fixedRate = 60000)       //60秒测试
     public void UpdateDailyData()
     {
-        Date dt = new Date();
-        UserReportModel urm = reportDao.createUserReportData(dt, appId);
-        boolean isHave = reportDao.isHaveUserReportData(dt, appId);
+        for (int i = 0; i < appList.length; i++)
+        {
+            String appId = appList[i];
 
-        if (isHave)
-            reportDao.updateUserReportData(urm, appId);
-        else
-            reportDao.saveUserReportData(urm, appId);
+            Date dt = new Date();
+            UserReportModel urm = reportDao.createUserReportData(dt, appId);
+            boolean isHave = reportDao.isHaveUserReportData(dt, appId);
+
+            if (isHave)
+                reportDao.updateUserReportData(urm, appId);
+            else
+                reportDao.saveUserReportData(urm, appId);
+        }
     }
 
     //更新渠道数据
