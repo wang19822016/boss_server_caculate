@@ -200,7 +200,7 @@ public class ReportDao
         return time / num;
     }
 
-    //获取创建一条日报数据
+    //创建一条日报数据
     public UserReportModel createUserReportData(Date date, String appId)
     {
         UserReportModel userReportModel = new UserReportModel();
@@ -218,10 +218,10 @@ public class ReportDao
         userReportModel.setNewUserPayRate(getNewUserPayRate(date, appId));
         userReportModel.setArpu(getArpu(date, appId));
         userReportModel.setArppu(getArppu(date, appId));
-        userReportModel.setRemain2(getRemainRate(date, 2, appId));
-        userReportModel.setRemain3(getRemainRate(date, 3, appId));
-        userReportModel.setRemain7(getRemainRate(date, 7, appId));
-        userReportModel.setRemain30(getRemainRate(date, 30, appId));
+//        userReportModel.setRemain2(getRemainRate(date, 2, appId));
+//        userReportModel.setRemain3(getRemainRate(date, 3, appId));
+//        userReportModel.setRemain7(getRemainRate(date, 7, appId));
+//        userReportModel.setRemain30(getRemainRate(date, 30, appId));
         userReportModel.setAvgOnlineNum(getAvgOnlineNum(date, appId));
         userReportModel.setAvgOnlineTime(getAvgOnlineTime(date, appId));
         return userReportModel;
@@ -268,6 +268,24 @@ public class ReportDao
                 urm.getAvgOnlineNum(),
                 urm.getAvgOnlineTime()
                 );
+    }
+
+    //更新N天留存率
+    public void updateRemainRate(Date date, int days, int remainRate, String appId)
+    {
+        String tableName = appId + "_" + "user_report";
+
+        try
+        {
+            jdbcTemplate.update("UPDATE "+tableName+" set remain" + days + " = ? WHERE date = ?" ,
+                    remainRate,
+                    date);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
     }
 
     //更新日报数据
