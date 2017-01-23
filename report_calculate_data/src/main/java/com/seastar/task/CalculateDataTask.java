@@ -3,7 +3,6 @@ package com.seastar.task;
 import com.seastar.dao.ReportDao;
 import com.seastar.model.UserReportModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -25,13 +24,13 @@ public class CalculateDataTask
     public void UpdateDailyData()
     {
         Date dt = new Date();
-        UserReportModel urm = reportDao.CreateUserReportData(dt, appId);
+        UserReportModel urm = reportDao.createUserReportData(dt, appId);
         boolean isHave = reportDao.isHaveUserReportData(dt, appId);
 
         if (isHave)
-            reportDao.UpdateUserReportData(urm, appId);
+            reportDao.updateUserReportData(urm, appId);
         else
-            reportDao.SaveUserReportData(urm, appId);
+            reportDao.saveUserReportData(urm, appId);
     }
 
     //更新渠道数据

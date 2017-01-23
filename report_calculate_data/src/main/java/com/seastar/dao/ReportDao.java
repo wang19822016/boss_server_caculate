@@ -43,12 +43,12 @@ public class ReportDao
         return num;
     }
 
-    //有效人数
+    //有效人数(当天新增)
     public int getValidNum(Date date, String appId)
     {
         String tableName = appId + "_" + "daily_data";
 
-        String sql = "select count(userId) from "+ tableName +" where DATEDIFF(serverTime, ?) = 0 and onlineTime >= 10";
+        String sql = "select count(userId) from "+ tableName +" where DATEDIFF(loginTime, ?) = 0 and DATEDIFF(loginTime,regTime) = 0 and onlineTime >= 10";
         int num = jdbcTemplate.queryForObject(sql, int.class, date);
         return num;
     }
@@ -66,7 +66,7 @@ public class ReportDao
     public int getDou(Date date, String appId)
     {
         String tableName = appId + "_" + "daily_data";
-        String sql = "select count(userId) from "+tableName+" where DATEDIFF(loginTime,?) = 0 and DATEDIFF(loginTime,regTime) != 0";
+        String sql = "select count(userId) from "+tableName+" where DATEDIFF(loginTime,?) = 0 and DATEDIFF(loginTime,regTime) > 0";
         int num = jdbcTemplate.queryForObject(sql, int.class, date);
         return num;
     }
@@ -134,7 +134,7 @@ public class ReportDao
         return (int)(payNum / dnu * 100);
     }
 
-    //活跃用户平均付费金额
+    //活跃用户平均付费金额(百位制,客户端需除以100）
     public int getArpu(Date date, String appId)
     {
         float payMoney = (float)getPayMoney(date, appId);
@@ -143,7 +143,7 @@ public class ReportDao
         return arpu;
     }
 
-    //付费用户平均付费金额
+    //付费用户平均付费金额(百位制,客户端需除以100）
     public int getArppu(Date date, String appId)
     {
         float payMoney = (float)getPayMoney(date, appId);
@@ -152,7 +152,7 @@ public class ReportDao
         return arppu;
     }
 
-    //留存率
+    //留存率(-1代表暂无数据)
     public int getRemainRate(Date date, int days, String appId)
     {
         String tableName = appId + "_" + "daily_data";
@@ -166,10 +166,13 @@ public class ReportDao
             Map userMap = (Map) it.next();
             int userId = (int) userMap.get("userId");
             sql = "select count(userId) from "+tableName+" where userId = ? and DATEDIFF(loginTime,regTime) = ?";
-            int num = jdbcTemplate.queryForObject(sql, int.class, userId,days - 1);
+            int num = jdbcTemplate.queryForObject(sql, int.class, userId, days - 1);
             if (num > 0)
                 remainNum++;
         }
+
+        if (newUsers.size() <= 0)
+            return  - 1;
 
         return (int)((float) remainNum / (float)newUsers.size() * 100);
     }
@@ -198,7 +201,7 @@ public class ReportDao
     }
 
     //获取创建一条日报数据
-    public UserReportModel CreateUserReportData(Date date, String appId)
+    public UserReportModel createUserReportData(Date date, String appId)
     {
         UserReportModel userReportModel = new UserReportModel();
         userReportModel.setDate(date);
@@ -225,11 +228,11 @@ public class ReportDao
     }
 
     //是否存在某天的日报数据
-    public boolean isHaveUserReportData(Date date, String appId)
+    public boolean isHaveUserReportData(Date dt, String appId)
     {
         String tableName = appId + "_" + "user_report";
         String sql = "select count(date) from "+tableName+" where DATEDIFF(serverTime,?) = 0";
-        int num = jdbcTemplate.queryForObject(sql, int.class, date);
+        int num = jdbcTemplate.queryForObject(sql, int.class, dt);
         if (num > 0)
             return true;
         else
@@ -237,7 +240,7 @@ public class ReportDao
     }
 
     //存储日报数据
-    public void SaveUserReportData(UserReportModel urm, String appId)
+    public void saveUserReportData(UserReportModel urm, String appId)
     {
         String tableName = appId + "_" + "user_report";
 
@@ -268,7 +271,7 @@ public class ReportDao
     }
 
     //更新日报数据
-    public void UpdateUserReportData(UserReportModel urm, String appId)
+    public void updateUserReportData(UserReportModel urm, String appId)
     {
         String tableName = appId + "_" + "user_report";
 
