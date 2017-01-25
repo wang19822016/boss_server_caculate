@@ -20,7 +20,7 @@ public class CalculateDataTask
     private ReportDao reportDao;
 
     //report apps
-    private String[] appList = new String[]{"1"};
+    private String[] appList = new String[]{"10"};
 
     //每隔XX时间更新新据
     //@Scheduled(fixedRate = 60000)       //60秒测试
@@ -41,19 +41,22 @@ public class CalculateDataTask
 
     //昨日完整数据(每天凌晨6点清算)
     //@Scheduled(cron = "0 6 * * *")
+    @Scheduled(fixedRate = 60000)       //60秒测试
     public void UpdateYestodayReport()
     {
-        Date dt = new Date(System.currentTimeMillis() - 24*60*60*1000);
+        Date dt = new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000 * 1);
 
         for (int i = 0; i < appList.length; i++)
         {
             String appId = appList[i];
 
-            UpdateUserData(dt, appId);      //用户综合数据
+            //UpdateUserData(dt, appId);      //用户综合数据
             UpdateRemain(dt, appId);        //用户留存
 
             //UpdateChannelData(dt, appId); //渠道综合数据
         }
+
+        System.out.println("ok");
     }
 
     @Autowired
@@ -87,7 +90,7 @@ public class CalculateDataTask
 
             //大于24小时才会有留存数据(最小如: 1-1 23:59 到1-3 0:01）
             if (days <= 1)
-                continue;;
+                continue;
 
             //以后留存率会有单独报表则按照days存储就可以了（如4日，5日留存等）
             if (days == 2 || days == 3 || days == 7 || days == 30)

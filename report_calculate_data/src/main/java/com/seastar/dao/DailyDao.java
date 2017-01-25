@@ -35,7 +35,7 @@ public class DailyDao
         {
             String tableName = appId + "_" + "daily_data";
 
-            String sql = "select min(loginTime) from " + tableName;
+            String sql = "select * from " + tableName + " ORDER BY loginTime ASC LIMIT 1";
 
             Map<String,Object> result = jdbcTemplate.queryForMap(sql);
 
