@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.text.DateFormat;
 import java.util.Date;
 
 /**
@@ -20,14 +21,14 @@ public class CalculateDataTask
     private ReportDao reportDao;
 
     //report apps
-    private String[] appList = new String[]{"10"};
+    private String[] appList = new String[]{"10","11"};
 
     //每隔XX时间更新新据
-    //@Scheduled(fixedRate = 60000)       //60秒测试
+    @Scheduled(fixedRate = 30000)       //30秒测试
     //@Scheduled(cron = "0 */2 * * *")    //每两个小时执行一次
     public void UpdateHourReport()
     {
-        Date dt = new Date();
+        Date dt = new Date(System.currentTimeMillis() + dayTime * 0);   //0测试用 更新当天的数据
 
         for (int i = 0; i < appList.length; i++)
         {
@@ -44,19 +45,23 @@ public class CalculateDataTask
     @Scheduled(fixedRate = 60000)       //60秒测试
     public void UpdateYestodayReport()
     {
-        Date dt = new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000 * 1);
+//        long t = System.currentTimeMillis();
+//        long tt = System.currentTimeMillis() / dayTime * dayTime;
+//        System.out.println("time: " + new Date(t).toString() + " / " + new Date(tt).toString() + " / " + new Date(tt - tt % dayTime).toString());
+
+        Date dt = new Date(System.currentTimeMillis() + dayTime * 3);   //*3测试用 模拟3天后的计算
 
         for (int i = 0; i < appList.length; i++)
         {
             String appId = appList[i];
 
-            //UpdateUserData(dt, appId);      //用户综合数据
-            UpdateRemain(dt, appId);        //用户留存
+            UpdateUserData(dt, appId);         //用户综合数据
+            UpdateRemain(dt, appId);          //用户留存
 
-            //UpdateChannelData(dt, appId); //渠道综合数据
+            //UpdateChannelData(dt, appId);   //渠道综合数据
         }
 
-        System.out.println("ok");
+        System.out.println("YestodayReport_OK");
     }
 
     @Autowired
@@ -73,6 +78,7 @@ public class CalculateDataTask
      * 1-5  2
      * 类似留存,LTV等需要持续计算的单独封装。
      * */
+    private long dayTime = (1000 * 3600 * 24);
     private void UpdateRemain(Date dt, String appId)
     {
         DailyModel dailyModel = dailyDao.findMinDateData(appId);
@@ -80,15 +86,13 @@ public class CalculateDataTask
         if (dailyModel == null)
             return;
 
-        long startTime = dailyModel.getLoginTime().getTime();
-        long currentTime = dt.getTime();
-        long dayTime = 24 * 60 * 60 * 1000;
+        long startTime = dailyModel.getLoginTime().getTime() / dayTime * dayTime;       //统一日期取整（如1-1 08:00:00)
+        long currentTime = dt.getTime() / dayTime * dayTime;
 
         for (long time = startTime; time < currentTime; time+=dayTime)
         {
-            int days = (int)((currentTime - startTime) / dayTime) + 1;
+            int days = (int)((currentTime - time) / dayTime);
 
-            //大于24小时才会有留存数据(最小如: 1-1 23:59 到1-3 0:01）
             if (days <= 1)
                 continue;
 

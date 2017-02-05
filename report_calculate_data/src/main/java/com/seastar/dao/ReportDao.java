@@ -103,7 +103,8 @@ public class ReportDao
     {
         float payNum = (float)getPayNum(date, appId);
         float dau = (float)getDau(date, appId);
-
+        if (dau <= 0)
+            return 0;
         return (int)((payNum / dau) * 100);
     }
 
@@ -131,7 +132,8 @@ public class ReportDao
     {
         float payNum = (float)getNewUserPayNum(date, appId);
         float dnu = (float)getDnu(date, appId);
-
+        if (dnu <= 0)
+            return 0;
         return (int)(payNum / dnu * 100);
     }
 
@@ -140,6 +142,8 @@ public class ReportDao
     {
         float payMoney = (float)getPayMoney(date, appId);
         float dau = (float)getDau(date, appId);
+        if (dau <= 0)
+            return 0;
         int arpu = (int)(payMoney / dau * 100) ;
         return arpu;
     }
@@ -149,6 +153,8 @@ public class ReportDao
     {
         float payMoney = (float)getPayMoney(date, appId);
         float payNum = (float)getPayNum(date, appId);
+        if (payNum <= 0)
+            return 0;
         int arppu = (int)(payMoney / payNum * 100) ;
         return arppu;
     }
@@ -204,7 +210,8 @@ public class ReportDao
 
         int timeValue = time == null ? 0 : time.intValue();
         int numValue =  num == null ? 0 : num.intValue();
-
+        if (numValue <= 0)
+            return 0;
         return  timeValue / numValue;   //numvalue 不应该为0
     }
 
@@ -254,7 +261,7 @@ public class ReportDao
         String tableName = appId + "_" + "user_report";
 
         jdbcTemplate.update("INSERT INTO "+tableName+"(date, installNum, regNum, validNum, dau, dou, payMoney, payNum, payRate, " +
-                        "newUserPayMoney,newUserPayNum,newUserPayRate,arpu,arppu,remain2,remain3,remain7,remain30,avgOnlineNum,avgOnlineTime) " +
+                        "newUserPayMoney,newUserPayNum,newUserPayRate,arpu,arppu,avgOnlineNum,avgOnlineTime) " +
                         "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 urm.getDate(),
                 urm.getInstallNum(),
@@ -270,10 +277,6 @@ public class ReportDao
                 urm.getNewUserPayRate(),
                 urm.getArpu(),
                 urm.getArppu(),
-                urm.getRemain2(),
-                urm.getRemain3(),
-                urm.getRemain7(),
-                urm.getRemain30(),
                 urm.getAvgOnlineNum(),
                 urm.getAvgOnlineTime()
                 );
@@ -286,9 +289,10 @@ public class ReportDao
 
         try
         {
-            jdbcTemplate.update("UPDATE "+tableName+" set remain" + days + " = ? WHERE DATEDIFF(date,?) = 0" ,
+           int line = jdbcTemplate.update("UPDATE "+tableName+" set remain" + days + " = ? WHERE DATEDIFF(date,?) = 0" ,
                     remainRate,
                     date);
+           System.out.println("remain_update_line: " + line);
         }
         catch (Exception e)
         {
@@ -304,7 +308,7 @@ public class ReportDao
 
         jdbcTemplate.update("UPDATE "+tableName+" SET installNum = ?, regNum = ?, validNum = ?, dau = ?, dou = ?, " +
                         "payMoney = ?, payNum = ?, payRate = ?, newUserPayMoney = ?,newUserPayNum = ?,newUserPayRate = ?," +
-                        "arpu = ?,arppu = ?,remain2 = ?,remain3 = ?,remain7 = ?,remain30 = ?,avgOnlineNum = ?,avgOnlineTime = ? " +
+                        "arpu = ?,arppu = ?,avgOnlineNum = ?,avgOnlineTime = ? " +
                         "WHERE DATEDIFF(date,?) = 0" ,
                 urm.getInstallNum(),
                 urm.getRegNum(),
@@ -319,10 +323,6 @@ public class ReportDao
                 urm.getNewUserPayRate(),
                 urm.getArpu(),
                 urm.getArppu(),
-                urm.getRemain2(),
-                urm.getRemain3(),
-                urm.getRemain7(),
-                urm.getRemain30(),
                 urm.getAvgOnlineNum(),
                 urm.getAvgOnlineTime(),
                 urm.getDate()
