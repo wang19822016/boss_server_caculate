@@ -7,6 +7,7 @@ import java.util.Date;
  */
 public class DailyModel
 {
+    private long id;
     private long userId;
 
     private String deviceId;
@@ -18,6 +19,14 @@ public class DailyModel
     private Date installTime;
     private Date regTime;
     private Date loginTime;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public long getUserId() {
         return userId;

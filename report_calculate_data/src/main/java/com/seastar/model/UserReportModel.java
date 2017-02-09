@@ -7,6 +7,7 @@ import java.util.Date;
  */
 public class UserReportModel
 {
+    private long id;
     private Date date;
     private int installNum;
     private int regNum;
@@ -27,6 +28,14 @@ public class UserReportModel
     private int remain30;
     private int avgOnlineNum;
     private int avgOnlineTime;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public Date getDate() {
         return date;

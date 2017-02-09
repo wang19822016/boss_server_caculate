@@ -6,6 +6,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.swing.text.html.parser.DTD;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -27,9 +29,9 @@ public class ReportDao
     public int getInstallNum(Date date, String appId)
     {
         String tableName = appId + "_" + "device_base";
-
-        String sql = "select count(deviceId) from " + tableName +" where DATEDIFF(serverTime,?) = 0";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select count(deviceId) from " + tableName +" where serverDate = ?";
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
     }
 
@@ -37,9 +39,9 @@ public class ReportDao
     public int getRegNum(Date date, String appId)
     {
         String tableName = appId + "_" + "user_base";
-
-        String sql = "select count(userId) from " + tableName + " where DATEDIFF(serverTime,?) = 0";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select count(userId) from " + tableName + " where serverDate = ?";
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
     }
 
@@ -47,9 +49,9 @@ public class ReportDao
     public int getValidNum(Date date, String appId)
     {
         String tableName = appId + "_" + "daily_data";
-
-        String sql = "select count(userId) from "+ tableName +" where DATEDIFF(loginTime, ?) = 0 and DATEDIFF(loginTime,regTime) = 0 and onlineTime >= 10";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select count(userId) from "+ tableName +" where loginTime = ? and loginTime = regTime and onlineTime >= 10";
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
     }
 
@@ -57,8 +59,9 @@ public class ReportDao
     public int getDau(Date date, String appId)
     {
         String tableName = appId + "_" + "daily_data";
-        String sql = "select count(userId) from "+tableName+" where DATEDIFF(loginTime,?) = 0";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select count(userId) from "+tableName+" where loginTime = ?";
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
     }
 
@@ -66,8 +69,9 @@ public class ReportDao
     public int getDou(Date date, String appId)
     {
         String tableName = appId + "_" + "daily_data";
-        String sql = "select count(userId) from "+tableName+" where DATEDIFF(loginTime,?) = 0 and DATEDIFF(loginTime,regTime) > 0";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select count(userId) from "+tableName+" where loginTime = ? and loginTime > regTime";
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
     }
 
@@ -75,8 +79,9 @@ public class ReportDao
     public int getDnu(Date date, String appId)
     {
         String tableName = appId + "_" + "daily_data";
-        String sql = "select count(userId) from "+tableName+" where DATEDIFF(loginTime,?) = 0 and DATEDIFF(loginTime,regTime) = 0";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select count(userId) from "+tableName+" where loginTime = ? and loginTime = regTime";
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
     }
 
@@ -84,8 +89,9 @@ public class ReportDao
     public int getPayMoney(Date date, String appId)
     {
         String tableName = appId + "_" + "daily_data";
-        String sql = "select sum(payMoney) from "+tableName+" where DATEDIFF(loginTime,?) = 0";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select sum(payMoney) from "+tableName+" where loginTime = ?";
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
     }
 
@@ -93,8 +99,9 @@ public class ReportDao
     public int getPayNum(Date date, String appId)
     {
         String tableName = appId + "_" + "daily_data";
-        String sql = "select count(userId) from "+tableName+" where DATEDIFF(loginTime,?) = 0 and payMoney > 0";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select count(userId) from "+tableName+" where loginTime = ? and payMoney > 0";
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
     }
 
@@ -112,9 +119,10 @@ public class ReportDao
     public int getNewUserPayMoney(Date date, String appId)
     {
         String tableName = appId + "_" + "daily_data";
-        String sql = "select sum(payMoney) from "+tableName+" where DATEDIFF(loginTime,?) = 0 and DATEDIFF(loginTime,regTime) = 0";
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select sum(payMoney) from "+tableName+" where loginTime = ? and loginTime = regTime";
         //String sql = "select sum(payMoney) from "+tableName+" where DATEDIFF(loginTime,?) = 0";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
     }
 
@@ -122,8 +130,9 @@ public class ReportDao
     public int getNewUserPayNum(Date date, String appId)
     {
         String tableName = appId + "_" + "daily_data";
-        String sql = "select count(userId) from "+tableName+" where DATEDIFF(loginTime,?) = 0 and payMoney > 0 and DATEDIFF(loginTime,regTime) = 0";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select count(userId) from "+tableName+" where loginTime = ? and loginTime = regTime and payMoney > 0 ";
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
     }
 
@@ -163,8 +172,9 @@ public class ReportDao
     public int getRemainRate(Date date, int days, String appId)
     {
         String tableName = appId + "_" + "daily_data";
-        String sql = "select userId from "+tableName+" where DATEDIFF(loginTime,?) = 0 and DATEDIFF(loginTime,regTime) = 0";
-        List newUsers = jdbcTemplate.queryForList(sql, date);
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select userId from "+tableName+" where loginTime = ? and loginTime = regTime";
+        List newUsers = jdbcTemplate.queryForList(sql, dt);
 
         if (newUsers.size() <= 0)
             return  - 1;
@@ -175,7 +185,8 @@ public class ReportDao
         while(it.hasNext())
         {
             Map userMap = (Map) it.next();
-            sql = "select count(userId) from "+tableName+" where userId = ? and DATEDIFF(loginTime,regTime) = ?";
+            //sql = "select count(userId) from "+tableName+" where userId = ? and DATEDIFF(loginTime,regTime) = ?";
+            sql = "select count(userId) from "+tableName+" where userId = ? and loginTime = regTime + ?";
             Integer num = jdbcTemplate.queryForObject(sql, Integer.class, userMap.get("userId"), days - 1);
 //            if (num > 0)
 //                System.out.println("num.... " + num);
@@ -192,8 +203,9 @@ public class ReportDao
     public int getAvgOnlineNum(Date date, String appId)
     {
         String tableName = appId + "_" + "user_login";
-        String sql = "select count(userId) from "+tableName+" where DATEDIFF(serverTime,?) = 0";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select count(userId) from "+tableName+" where serverDate = ?";
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue() / 24;
     }
 
@@ -201,12 +213,12 @@ public class ReportDao
     public int getAvgOnlineTime(Date date, String appId)
     {
         String tableName = appId + "_" + "daily_data";
+        String dt = DateFormat.getDateInstance().format(date);
+        String sql = "select sum(onlineTime) from "+tableName+" where loginTime = ?";
+        Integer time = jdbcTemplate.queryForObject(sql, Integer.class, dt);
 
-        String sql = "select sum(onlineTime) from "+tableName+" where DATEDIFF(loginTime,?) = 0";
-        Integer time = jdbcTemplate.queryForObject(sql, Integer.class, date);
-
-        sql = "select count(userId) from "+tableName+" where DATEDIFF(loginTime,?) = 0";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        sql = "select count(userId) from "+tableName+" where loginTime = ?";
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
 
         int timeValue = time == null ? 0 : time.intValue();
         int numValue =  num == null ? 0 : num.intValue();
@@ -246,8 +258,9 @@ public class ReportDao
     public boolean isHaveUserReportData(Date dt, String appId)
     {
         String tableName = appId + "_" + "user_report";
-        String sql = "select count(date) from "+tableName+" where DATEDIFF(date,?) = 0";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
+        String d = DateFormat.getDateInstance().format(dt);
+        String sql = "select count(date) from "+tableName+" where date = ?";
+        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, d);
         int numValue = num == null ? 0 : num.intValue();
         if (numValue > 0)
             return true;
@@ -262,7 +275,7 @@ public class ReportDao
 
         jdbcTemplate.update("INSERT INTO "+tableName+"(date, installNum, regNum, validNum, dau, dou, payMoney, payNum, payRate, " +
                         "newUserPayMoney,newUserPayNum,newUserPayRate,arpu,arppu,avgOnlineNum,avgOnlineTime) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 urm.getDate(),
                 urm.getInstallNum(),
                 urm.getRegNum(),
@@ -286,12 +299,12 @@ public class ReportDao
     public void updateRemainRate(Date date, int days, int remainRate, String appId)
     {
         String tableName = appId + "_" + "user_report";
-
+        String dt = DateFormat.getDateInstance().format(date);
         try
         {
-           int line = jdbcTemplate.update("UPDATE "+tableName+" set remain" + days + " = ? WHERE DATEDIFF(date,?) = 0" ,
+           int line = jdbcTemplate.update("UPDATE "+tableName+" set remain" + days + " = ? WHERE date = ?" ,
                     remainRate,
-                    date);
+                    dt);
            System.out.println("remain_update_line: " + line);
         }
         catch (Exception e)
@@ -305,11 +318,11 @@ public class ReportDao
     public void updateUserReportData(UserReportModel urm, String appId)
     {
         String tableName = appId + "_" + "user_report";
-
+        String dt = DateFormat.getDateInstance().format(urm.getDate());
         jdbcTemplate.update("UPDATE "+tableName+" SET installNum = ?, regNum = ?, validNum = ?, dau = ?, dou = ?, " +
                         "payMoney = ?, payNum = ?, payRate = ?, newUserPayMoney = ?,newUserPayNum = ?,newUserPayRate = ?," +
                         "arpu = ?,arppu = ?,avgOnlineNum = ?,avgOnlineTime = ? " +
-                        "WHERE DATEDIFF(date,?) = 0" ,
+                        "WHERE date = ?" ,
                 urm.getInstallNum(),
                 urm.getRegNum(),
                 urm.getValidNum(),
@@ -325,7 +338,7 @@ public class ReportDao
                 urm.getArppu(),
                 urm.getAvgOnlineNum(),
                 urm.getAvgOnlineTime(),
-                urm.getDate()
+                dt
 
 //        jdbcTemplate.update("UPDATE "+tableName+" SET remain2 = ?) " +
 //                        "WHERE DATEDIFF(date,?) = 0" ,

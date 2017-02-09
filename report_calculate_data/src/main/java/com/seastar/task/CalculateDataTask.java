@@ -21,7 +21,7 @@ public class CalculateDataTask
     private ReportDao reportDao;
 
     //report apps
-    private String[] appList = new String[]{"10","11"};
+    private String[] appList = new String[]{"11"};
 
     //每隔XX时间更新新据
     @Scheduled(fixedRate = 30000)       //30秒测试
