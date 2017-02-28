@@ -1,6 +1,7 @@
 package com.seastar.model;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created by e on 2017/1/20.
@@ -195,5 +196,30 @@ public class UserReportModel
 
     public void setAvgOnlineTime(int avgOnlineTime) {
         this.avgOnlineTime = avgOnlineTime;
+    }
+
+    public void toObject(Map<String, Object> map)
+    {
+        id = (long)map.get("id");
+        date = (Date) map.get("date");
+        installNum = (int)map.getOrDefault("installNum","0");
+        regNum = (int)map.getOrDefault("regNum","0");
+        validNum = (int)map.getOrDefault("validNum","0");
+        dau = (int)map.getOrDefault("dau","0");
+        dou = (int)map.getOrDefault("dou","0");
+        payMoney = (int)map.getOrDefault("payMoney","0");
+        payNum = (int)map.getOrDefault("payNum","0");
+        payRate = (int)map.getOrDefault("payRate","0");
+        newUserPayMoney = (int)map.getOrDefault("newUserPayMoney","0");
+        newUserPayNum = (int)map.getOrDefault("newUserPayNum","0");
+        newUserPayRate = (int)map.getOrDefault("newUserPayRate","0");
+        arpu = (int)map.getOrDefault("arpu","0");
+        arppu = (int)map.getOrDefault("arppu","0");
+        remain2 = (int)map.getOrDefault("remain2","0");
+        remain3 = (int)map.getOrDefault("remain3","0");
+        remain7 = (int)map.getOrDefault("remain7","0");
+        remain30 = (int)map.getOrDefault("remain30","0");
+        avgOnlineNum = (int)map.getOrDefault("avgOnlineNum","0");
+        avgOnlineTime = (int)map.getOrDefault("avgOnlineTime","0");
     }
 }

@@ -1,7 +1,9 @@
 package com.seastar.task;
 
+import com.seastar.common.ChannelType;
 import com.seastar.dao.DailyDao;
 import com.seastar.dao.ReportDao;
+import com.seastar.model.ChannelReportModel;
 import com.seastar.model.DailyModel;
 import com.seastar.model.UserReportModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by e on 2017/1/19.
@@ -18,13 +21,16 @@ import java.util.Date;
 public class CalculateDataTask
 {
     @Autowired
+    private DailyDao dailyDao;
+
+    @Autowired
     private ReportDao reportDao;
 
     //report apps
     private String[] appList = new String[]{"11"};
 
     //每隔XX时间更新新据
-    @Scheduled(fixedRate = 30000)       //30秒测试
+    @Scheduled(fixedRate = 600000)       //30秒测试
     //@Scheduled(cron = "0 */2 * * *")    //每两个小时执行一次
     public void UpdateHourReport()
     {
@@ -34,38 +40,31 @@ public class CalculateDataTask
         {
             String appId = appList[i];
 
-            UpdateUserData(dt, appId);  //用户综合数据
+            UpdateUserData(dt, appId);       //用户综合数据
 
-            //UpdateChannelData(dt, appId);
+            UpdateChannelData(dt, appId);   //渠道综合数据
         }
     }
 
     //昨日完整数据(每天凌晨6点清算)
     //@Scheduled(cron = "0 6 * * *")
-    @Scheduled(fixedRate = 60000)       //60秒测试
+    @Scheduled(fixedRate = 1200000)       //60秒测试
     public void UpdateYestodayReport()
     {
-//        long t = System.currentTimeMillis();
-//        long tt = System.currentTimeMillis() / dayTime * dayTime;
-//        System.out.println("time: " + new Date(t).toString() + " / " + new Date(tt).toString() + " / " + new Date(tt - tt % dayTime).toString());
-
         Date dt = new Date(System.currentTimeMillis() + dayTime * 3);   //*3测试用 模拟3天后的计算
 
         for (int i = 0; i < appList.length; i++)
         {
             String appId = appList[i];
 
-            UpdateUserData(dt, appId);         //用户综合数据
+            UpdateUserData(dt, appId);        //用户综合数据
             UpdateRemain(dt, appId);          //用户留存
 
-            //UpdateChannelData(dt, appId);   //渠道综合数据
+            UpdateChannelData(dt, appId);     //渠道综合数据
         }
 
         System.out.println("YestodayReport_OK");
     }
-
-    @Autowired
-    private DailyDao dailyDao;
 
     /**
      * 留存率
@@ -101,7 +100,7 @@ public class CalculateDataTask
             {
                 //当天新增用户的N天留存率
                 Date currentDay = new Date(time);
-                int raminRate = reportDao.getRemainRate(currentDay, days, appId);
+                int raminRate = reportDao.getRemainRate(currentDay, days, appId, ChannelType.ALL);
 
                 //0代表当天数据为null
                 if (raminRate > 0)
@@ -123,8 +122,27 @@ public class CalculateDataTask
     }
 
     //渠道综合数据
-    private void  UpdateChannelData(Date dt, String appId)
+    private void UpdateChannelData(Date date, String appId)
     {
+        List<String> list = reportDao.getChannelListByDate(date, appId);
 
+        for (int i = 0; i < list.size(); i++)
+        {
+            String channelType = list.get(i);
+            if (channelType.isEmpty())
+            {
+                System.out.println("ChannelType Error!!!");
+                continue;
+            }
+
+            ChannelReportModel crm = reportDao.createChannelReportModelByChannel(date, appId, channelType);
+
+            boolean isHave = reportDao.isHaveChannelReportData(appId, date, channelType);
+
+            if (isHave)
+                reportDao.updateChannelReportData(crm, appId);
+            else
+                reportDao.saveChannelReportData(crm, appId);
+        }
     }
 }
