@@ -202,24 +202,24 @@ public class UserReportModel
     {
         id = (long)map.get("id");
         date = (Date) map.get("date");
-        installNum = (int)map.getOrDefault("installNum","0");
-        regNum = (int)map.getOrDefault("regNum","0");
-        validNum = (int)map.getOrDefault("validNum","0");
-        dau = (int)map.getOrDefault("dau","0");
-        dou = (int)map.getOrDefault("dou","0");
-        payMoney = (int)map.getOrDefault("payMoney","0");
-        payNum = (int)map.getOrDefault("payNum","0");
-        payRate = (int)map.getOrDefault("payRate","0");
-        newUserPayMoney = (int)map.getOrDefault("newUserPayMoney","0");
-        newUserPayNum = (int)map.getOrDefault("newUserPayNum","0");
-        newUserPayRate = (int)map.getOrDefault("newUserPayRate","0");
-        arpu = (int)map.getOrDefault("arpu","0");
-        arppu = (int)map.getOrDefault("arppu","0");
-        remain2 = (int)map.getOrDefault("remain2","0");
-        remain3 = (int)map.getOrDefault("remain3","0");
-        remain7 = (int)map.getOrDefault("remain7","0");
-        remain30 = (int)map.getOrDefault("remain30","0");
-        avgOnlineNum = (int)map.getOrDefault("avgOnlineNum","0");
-        avgOnlineTime = (int)map.getOrDefault("avgOnlineTime","0");
+        installNum = (int)map.get("installNum");
+        regNum = (int)map.get("regNum");
+        validNum = (int)map.get("validNum");
+        dau = (int)map.get("dau");
+        dou = (int)map.get("dou");
+        payMoney = (int)map.get("payMoney");
+        payNum = (int)map.get("payNum");
+        payRate = (int)map.get("payRate");
+        newUserPayMoney = (int)map.get("newUserPayMoney");
+        newUserPayNum = (int)map.get("newUserPayNum");
+        newUserPayRate = (int)map.get("newUserPayRate");
+        arpu = (int)map.get("arpu");
+        arppu = (int)map.get("arppu");
+        remain2 = (int)map.get("remain2");
+        remain3 = (int)map.get("remain3");
+        remain7 = (int)map.get("remain7");
+        remain30 = (int)map.get("remain30");
+        avgOnlineNum = (int)map.get("avgOnlineNum");
+        avgOnlineTime = (int)map.get("avgOnlineTime");
     }
 }

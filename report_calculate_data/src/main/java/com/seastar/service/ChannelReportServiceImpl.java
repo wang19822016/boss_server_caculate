@@ -20,10 +20,16 @@ public class ChannelReportServiceImpl implements ChannelReportService
     @Autowired
     private ReportDao reportDao;
 
-    //获取渠道报表信息
-    public List<ChannelReportModel> doGetChannelReportList(ChannelReportReq req)
+    //获取渠道报表信息（按天）
+    public List<ChannelReportModel> doGetChannelReportListByDay(ChannelReportReq req)
     {
-        return reportDao.getChannelReportList(req.appId, req.selectType, req.beginTime, req.endTime);
+        return reportDao.getChannelReportListByDay(req.appId, req.beginTime, req.endTime);
+    }
+
+    //获取渠道报表信息（按范围）
+    public List<ChannelReportModel> doGetChannelReportListByRange(ChannelReportReq req)
+    {
+        return reportDao.getChannelReportListByRange(req.appId, req.beginTime, req.endTime);
     }
 
     //手动添加广告内容(展示数，点击数，花费)

@@ -7,7 +7,6 @@ import java.util.Date;
  */
 public class ChannelReportReq extends BaseRequest
 {
-    public int selectType;      // 0. 单日查询  1. 累计查询
     public Date beginTime;
     public Date endTime;
 }

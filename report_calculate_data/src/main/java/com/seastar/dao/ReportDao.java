@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.*;
 
@@ -381,7 +383,7 @@ public class ReportDao
            int line = jdbcTemplate.update("UPDATE "+tableName+" set remain" + days + " = ? WHERE date = ?" ,
                     remainRate,
                     dt);
-           System.out.println("remain_update_line: " + line);
+           //System.out.println("remain_update_line: " + line);
         }
         catch (Exception e)
         {
@@ -426,8 +428,9 @@ public class ReportDao
     public List<String> getChannelListByDate(Date date, String appId)
     {
         String tableName = appId + "_" + "device_base";
+        String dt = DateFormat.getDateInstance().format(date);
         String sql = "select distinct channelType from " + tableName + " where serverDate = ?";
-        List<String> list = jdbcTemplate.queryForList(sql, String.class, date);
+        List<String> list = jdbcTemplate.queryForList(sql, String.class, dt);
         return list;
     }
 
@@ -485,7 +488,7 @@ public class ReportDao
         String tableName = appId + "_" + "channel_report";
 
         jdbcTemplate.update("INSERT INTO "+tableName+"(date, channelType, cpc, cpm, installNum, cpi, validNum, clickRate, installRate,regRate, validRate, " +
-                        "roi, remain2, remain3, remain7, remain30,payMoney,payNum,payRate,arpu,arppu) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "roi, remain2, remain3, remain7, remain30,payMoney,payNum,payRate,arpu,arppu) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 crm.getDate(),
                 crm.getChannelType(),
                 crm.getCpc(),
@@ -541,7 +544,7 @@ public class ReportDao
                 crm.getPayRate(),
                 crm.getArpu(),
                 crm.getArppu(),
-                crm.getDate(),
+                dt,
                 crm.getChannelType());
     }
 
@@ -614,12 +617,12 @@ public class ReportDao
 
         if (channelType == ChannelType.ALL)
         {
-            sql = "select sum(costMoney) from " + tableName +" where serverDate = ?";
+            sql = "select sum(costMoney) from " + tableName +" where date = ?";
             money = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         }
         else
         {
-            sql = "select sum(costMoney) from " + tableName +" where serverDate = ? and channelType = ?";
+            sql = "select sum(costMoney) from " + tableName +" where date = ? and channelType = ?";
             money = jdbcTemplate.queryForObject(sql, Integer.class, dt, channelType);
         }
 
@@ -648,12 +651,12 @@ public class ReportDao
 
         if (channelType == ChannelType.ALL)
         {
-            sql = "select sum(showNum) from " + tableName +" where serverDate = ?";
+            sql = "select sum(showNum) from " + tableName +" where date = ?";
             showNum = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         }
         else
         {
-            sql = "select sum(showNum) from " + tableName +" where serverDate = ? and channelType = ?";
+            sql = "select sum(showNum) from " + tableName +" where date = ? and channelType = ?";
             showNum = jdbcTemplate.queryForObject(sql, Integer.class, dt, channelType);
         }
 
@@ -670,12 +673,12 @@ public class ReportDao
 
         if (channelType == ChannelType.ALL)
         {
-            sql = "select sum(clickNum) from " + tableName +" where serverDate = ?";
+            sql = "select sum(clickNum) from " + tableName +" where date = ?";
             clickNum = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         }
         else
         {
-            sql = "select sum(clickNum) from " + tableName +" where serverDate = ? and channelType = ?";
+            sql = "select sum(clickNum) from " + tableName +" where date = ? and channelType = ?";
             clickNum = jdbcTemplate.queryForObject(sql, Integer.class, dt, channelType);
         }
 
@@ -724,33 +727,17 @@ public class ReportDao
         return urmList;
     }
 
-    //selectType 0.单日查询  1.累计查询
-    public List<ChannelReportModel> getChannelReportList(String appId, int selectType, Date beginTime, Date endTime)
+    //按单日查询
+    public List<ChannelReportModel> getChannelReportListByDay(String appId, Date beginTime, Date endTime)
     {
         String tableName = appId + "_" + "channel_report";
         String bt = DateFormat.getDateInstance().format(beginTime);
         String et = DateFormat.getDateInstance().format(endTime);
-        Iterator it;
 
-        if (selectType == 0)
-        {
-            String sql = "select * from " + tableName + " where date between ? and ? group by date order by channelType";
+        String sql = "select * from " + tableName + " where date between ? and ? order by date,channelType";
 
-            List list = jdbcTemplate.queryForList(sql, bt, et);
-            it = list.iterator();
-        }
-        else
-        {
-            String sql = "select sum(showNum) as showNum, sum(clickNum) as clickNum, sum(cpc) as cpc, sum(cpm) as cpm," +
-                    "sum(installNum) as installNum, sum(cpi) as cpi, sum(validNum) as validNum, sum(clickRate) as clickRate," +
-                    "sum(installRate) as installRate, sum(regRate) as regRate, sum(validRate) as validRate, sum(roi) as roi, " +
-                    "sum(costMoney) as costMoney, sum(remain2) as remain2, sum(remain3) as remain3, sum(remain7) as remain7, " +
-                    "sum(remain30) as remain30, sum(payMoney) as payMoney, sum(payNum) as payNum, sum(payRate) as payRate, " +
-                    "sum(arpu) as arpu, sum(arppu) as arppu from " + tableName + " where date between ? and ? group by channelType order by channelType";
-
-            List list = jdbcTemplate.queryForList(sql, bt, et);
-            it = list.iterator();
-        }
+        List list = jdbcTemplate.queryForList(sql, bt, et);
+        Iterator it = list.iterator();
 
         List<ChannelReportModel> crmList = new ArrayList<ChannelReportModel>();
 
@@ -759,39 +746,84 @@ public class ReportDao
             Map<String, Object> map = (Map) it.next();
             ChannelReportModel crm = new ChannelReportModel();
             crm.toObject(map);
+            crmList.add(crm);
+        }
 
-            if (selectType == 1)        //渠道累计查询
-            {
-                int days = (int)((endTime.getTime() - beginTime.getTime()) / (1000*3600*24)) + 1;
-                int cpc = (int)map.get("cpc") / days;
-                int cpm = (int)map.get("cpm") / days;
-                int cpi = (int)map.get("cpi") / days;
-                int clickRate = (int)map.get("clickRate") / days;
-                int installRate = (int)map.get("installRate") / days;
-                int regRate = (int)map.get("regRate") / days;
-                int validRate = (int)map.get("validRate") / days;
-                int remain2 = (int)map.get("remain2") / days;
-                int remain3 = (int)map.get("remain3") / days;
-                int remain7 = (int)map.get("remain7") / days;
-                int remain30 = (int)map.get("remain30") / days;
-                int payRate = (int)map.get("payRate") / days;
-                int arpu = (int)map.get("arpu") / days;
-                int arppu = (int)map.get("arppu") / days;
-                crm.setCpc(cpc);
-                crm.setCpm(cpm);
-                crm.setCpi(cpi);
-                crm.setClickRate(clickRate);
-                crm.setInstallRate(installRate);
-                crm.setRegRate(regRate);
-                crm.setValidRate(validRate);
-                crm.setRemain2(remain2);
-                crm.setRemain3(remain3);
-                crm.setRemain7(remain7);
-                crm.setRemain30(remain30);
-                crm.setPayRate(payRate);
-                crm.setArpu(arpu);
-                crm.setArppu(arppu);
-            }
+        return crmList;
+    }
+
+    //按累计查询
+    public List<ChannelReportModel> getChannelReportListByRange(String appId, Date beginTime, Date endTime)
+    {
+        String tableName = appId + "_" + "channel_report";
+        String bt = DateFormat.getDateInstance().format(beginTime);
+        String et = DateFormat.getDateInstance().format(endTime);
+
+        String sql = "select channelType, sum(showNum) as showNum, sum(clickNum) as clickNum, sum(cpc) as cpc, sum(cpm) as cpm," +
+                "sum(installNum) as installNum, sum(cpi) as cpi, sum(validNum) as validNum, sum(clickRate) as clickRate," +
+                "sum(installRate) as installRate, sum(regRate) as regRate, sum(validRate) as validRate, sum(roi) as roi, " +
+                "sum(costMoney) as costMoney, sum(remain2) as remain2, sum(remain3) as remain3, sum(remain7) as remain7, " +
+                "sum(remain30) as remain30, sum(payMoney) as payMoney, sum(payNum) as payNum, sum(payRate) as payRate, " +
+                "sum(arpu) as arpu, sum(arppu) as arppu from " + tableName + " where date between ? and ? group by channelType order by channelType";
+
+        List list = jdbcTemplate.queryForList(sql, bt, et);
+        Iterator it = list.iterator();
+
+        List<ChannelReportModel> crmList = new ArrayList<ChannelReportModel>();
+
+        while(it.hasNext())
+        {
+            Map<String, Object> map = (Map) it.next();
+            ChannelReportModel crm = new ChannelReportModel();
+
+            int days = (int)((endTime.getTime() - beginTime.getTime()) / (1000*3600*24)) + 1;
+
+            int showNum = ((BigDecimal)map.get("showNum")).intValue();
+            int clickNum = ((BigDecimal)map.get("clickNum")).intValue();
+            int cpc = ((BigDecimal)map.get("cpc")).intValue() / days;
+            int cpm = ((BigDecimal)map.get("cpm")).intValue() / days;
+            int installNum = ((BigDecimal)map.get("installNum")).intValue();
+            int cpi = ((BigDecimal)map.get("cpi")).intValue() / days;
+            int validNum = ((BigDecimal)map.get("validNum")).intValue();
+            int clickRate = ((BigDecimal)map.get("clickRate")).intValue() / days;
+            int installRate = ((BigDecimal)map.get("installRate")).intValue() / days;
+            int regRate = ((BigDecimal)map.get("regRate")).intValue() / days;
+            int validRate = ((BigDecimal)map.get("validRate")).intValue() / days;
+            int roi = ((BigDecimal)map.get("roi")).intValue();
+            int costMoney = ((BigDecimal)map.get("costMoney")).intValue();
+            int remain2 = ((BigDecimal)map.get("remain2")).intValue() / days;
+            int remain3 = ((BigDecimal)map.get("remain3")).intValue() / days;
+            int remain7 = ((BigDecimal)map.get("remain7")).intValue() / days;
+            int remain30 = ((BigDecimal)map.get("remain30")).intValue() / days;
+            int payMoney = ((BigDecimal)map.get("payMoney")).intValue();
+            int payNum = ((BigDecimal)map.get("payNum")).intValue();
+            int payRate = ((BigDecimal)map.get("payRate")).intValue() / days;
+            int arpu = ((BigDecimal)map.get("arpu")).intValue() / days;
+            int arppu = ((BigDecimal)map.get("arppu")).intValue() / days;
+
+            crm.setChannelType((String)map.get("channelType"));
+            crm.setShowNum(showNum);
+            crm.setClickNum(clickNum);
+            crm.setCpc(cpc);
+            crm.setCpm(cpm);
+            crm.setInstallNum(installNum);
+            crm.setCpi(cpi);
+            crm.setValidNum(validNum);
+            crm.setClickRate(clickRate);
+            crm.setInstallRate(installRate);
+            crm.setRegRate(regRate);
+            crm.setValidRate(validRate);
+            crm.setRoi(roi);
+            crm.setCostMoney(costMoney);
+            crm.setRemain2(remain2);
+            crm.setRemain3(remain3);
+            crm.setRemain7(remain7);
+            crm.setRemain30(remain30);
+            crm.setPayMoney(payMoney);
+            crm.setPayNum(payNum);
+            crm.setPayRate(payRate);
+            crm.setArpu(arpu);
+            crm.setArppu(arppu);
 
             crmList.add(crm);
         }

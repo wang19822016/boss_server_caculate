@@ -5,13 +5,17 @@ import java.util.Date;
 /**
  * Created by e on 2017/1/17.
  */
+
 public class DailyModel
 {
     private long id;
     private long userId;
 
     private String deviceId;
-    private String deviceType;
+    private String channelType;     //渠道 facebook
+    private String platform;        //平台  ios/android
+    private String deviceType;      // samsung
+    private String deviceName;      //i9001
     private String country;
     private int payMoney;
     private int onlineTime;
@@ -38,6 +42,30 @@ public class DailyModel
 
     public String getDeviceId() {
         return deviceId;
+    }
+
+    public String getChannelType() {
+        return channelType;
+    }
+
+    public void setChannelType(String channelType) {
+        this.channelType = channelType;
+    }
+
+    public String getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform(String platform) {
+        this.platform = platform;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
     }
 
     public void setDeviceId(String deviceId) {

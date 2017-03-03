@@ -7,7 +7,6 @@ import java.util.Date;
  */
 public class UserReportReq extends BaseRequest
 {
-    public String appId;
     public Date beginTime;
     public Date endTime;
 }

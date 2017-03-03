@@ -27,42 +27,58 @@ public class CalculateDataTask
     private ReportDao reportDao;
 
     //report apps
-    private String[] appList = new String[]{"11"};
+    private String[] appList = new String[]{"10"};
 
     //每隔XX时间更新新据
-    @Scheduled(fixedRate = 600000)       //30秒测试
+    //@Scheduled(fixedRate = 600000000)       //30秒测试
     //@Scheduled(cron = "0 */2 * * *")    //每两个小时执行一次
     public void UpdateHourReport()
     {
-        Date dt = new Date(System.currentTimeMillis() + dayTime * 0);   //0测试用 更新当天的数据
+        long startTime = System.currentTimeMillis();
+        System.out.println("start: " + startTime);
 
-        for (int i = 0; i < appList.length; i++)
+        for (int day = 0; day < 1; day++)
         {
-            String appId = appList[i];
+            Date dt = new Date(System.currentTimeMillis() + dayTime * day);   //0测试用 更新当天的数据
 
-            UpdateUserData(dt, appId);       //用户综合数据
+            for (int i = 0; i < appList.length; i++)
+            {
+                String appId = appList[i];
 
-            UpdateChannelData(dt, appId);   //渠道综合数据
+                //UpdateUserData(dt, appId);       //用户综合数据
+
+                UpdateChannelData(dt, appId);   //渠道综合数据
+            }
         }
+        long endTime = System.currentTimeMillis();
+        System.out.println("totalTime: " + (endTime - startTime) / 1000);
+
     }
 
     //昨日完整数据(每天凌晨6点清算)
     //@Scheduled(cron = "0 6 * * *")
-    @Scheduled(fixedRate = 1200000)       //60秒测试
+    //@Scheduled(fixedRate = 120000000)       //60秒测试
     public void UpdateYestodayReport()
     {
-        Date dt = new Date(System.currentTimeMillis() + dayTime * 3);   //*3测试用 模拟3天后的计算
+        long startTime = System.currentTimeMillis();
+        System.out.println("start: " + startTime);
 
-        for (int i = 0; i < appList.length; i++)
+        for (int day = 0; day < 31; day++)
         {
-            String appId = appList[i];
+            Date dt = new Date(System.currentTimeMillis() + dayTime * day);   //*3测试用 模拟3天后的计算
 
-            UpdateUserData(dt, appId);        //用户综合数据
-            UpdateRemain(dt, appId);          //用户留存
-
-            UpdateChannelData(dt, appId);     //渠道综合数据
+            for (int i = 0; i < appList.length; i++)
+            {
+                String appId = appList[i];
+                //UpdateUserData(dt, appId);        //用户综合数据
+                UpdateRemain(dt, appId);            //用户留存
+                System.out.println("oneDay: " + (System.currentTimeMillis() - startTime)/1000);
+                //UpdateChannelData(dt, appId);     //渠道综合数据
+            }
         }
 
+        long endTime = System.currentTimeMillis();
+        System.out.println("totalTime: " + (endTime - startTime)/1000);
         System.out.println("YestodayReport_OK");
     }
 
@@ -126,6 +142,9 @@ public class CalculateDataTask
     {
         List<String> list = reportDao.getChannelListByDate(date, appId);
 
+        long startTime = System.currentTimeMillis();
+        System.out.println("dayStart: " + startTime);
+
         for (int i = 0; i < list.size(); i++)
         {
             String channelType = list.get(i);
@@ -143,6 +162,11 @@ public class CalculateDataTask
                 reportDao.updateChannelReportData(crm, appId);
             else
                 reportDao.saveChannelReportData(crm, appId);
+
+            System.out.println("oneChannel: " + (System.currentTimeMillis() - startTime)/1000);
         }
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("dayTotalTime: " + (endTime - startTime)/1000);
     }
 }

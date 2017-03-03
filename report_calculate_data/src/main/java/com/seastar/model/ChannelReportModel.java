@@ -36,32 +36,32 @@ public class ChannelReportModel
 
     public void toObject(Map<String, Object> map)
     {
-        id = (long)map.get("id");
+        //id = (long)map.get("id");
         date = (Date) map.get("date");
         channelType = (String) map.get("channelType");
-        showNum = (int)map.getOrDefault("showNum","0");
-        clickNum = (int)map.getOrDefault("clickNum","0");
-        cpc = (int)map.getOrDefault("cpc","0");
-        cpm = (int)map.getOrDefault("cpm","0");
-        installNum = (int)map.getOrDefault("installNum","0");
-        cpi = (int)map.getOrDefault("cpi","0");
-        validNum = (int)map.getOrDefault("validNum","0");
-        clickRate = (int)map.getOrDefault("clickRate","0");
-        installRate = (int)map.getOrDefault("installRate","0");
-        regRate = (int)map.getOrDefault("regRate","0");
-        validRate = (int)map.getOrDefault("validRate","0");
-        roi = (int)map.getOrDefault("roi","0");
-        costMoney = (int)map.getOrDefault("costMoney","0");
-        remain2 = (int)map.getOrDefault("remain2","0");
-        remain3 = (int)map.getOrDefault("remain3","0");
-        remain7 = (int)map.getOrDefault("remain7","0");
-        remain30 = (int)map.getOrDefault("remain30","0");
+        showNum = (int)map.get("showNum");
+        clickNum = (int)map.get("clickNum");
+        cpc = (int)map.get("cpc");
+        cpm = (int)map.get("cpm");
+        installNum = (int)map.get("installNum");
+        cpi = (int)map.get("cpi");
+        validNum = (int)map.get("validNum");
+        clickRate = (int)map.get("clickRate");
+        installRate = (int)map.get("installRate");
+        regRate = (int)map.get("regRate");
+        validRate = (int)map.get("validRate");
+        roi = (int)map.get("roi");
+        costMoney = (int)map.get("costMoney");
+        remain2 = (int)map.get("remain2");
+        remain3 = (int)map.get("remain3");
+        remain7 = (int)map.get("remain7");
+        remain30 = (int)map.get("remain30");
 
-        payMoney = (int)map.getOrDefault("payMoney","0");
-        payNum = (int)map.getOrDefault("payNum","0");
-        payRate = (int)map.getOrDefault("payRate","0");
-        arpu = (int)map.getOrDefault("arpu","0");
-        arppu = (int)map.getOrDefault("arppu","0");
+        payMoney = (int)map.get("payMoney");
+        payNum = (int)map.get("payNum");
+        payRate = (int)map.get("payRate");
+        arpu = (int)map.get("arpu");
+        arppu = (int)map.get("arppu");
     }
 
     public long getId() {
