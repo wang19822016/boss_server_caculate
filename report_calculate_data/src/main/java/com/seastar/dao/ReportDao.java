@@ -24,6 +24,12 @@ public class ReportDao
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    public List<String> getApps()
+    {
+        String sql = "select appId from apps";
+        List<String> list = jdbcTemplate.queryForList(sql, String.class);
+        return list;
+    }
     //安装数量（全渠道）
     public int getInstallNum(Date date, String appId, String channelType)
     {
@@ -110,6 +116,29 @@ public class ReportDao
         return num == null ? 0 : num.intValue();
     }
 
+    //N日活跃用户
+    public int getNau(Date begin, Date end, String appId, String channelType)
+    {
+        String tableName = appId + "_" + "daily_data";
+        String bt = DateFormat.getDateInstance().format(begin);
+        String et = DateFormat.getDateInstance().format(end);
+        String sql;
+        Integer num;
+
+        if (channelType == ChannelType.ALL)
+        {
+            sql = "select distinct count(userId) from "+tableName+" where loginTime between ? and ?";
+            num = jdbcTemplate.queryForObject(sql, Integer.class, bt, et);
+        }
+        else
+        {
+            sql = "select distinct count(userId) from "+tableName+" where loginTime between ? and ? and channelType = ?";
+            num = jdbcTemplate.queryForObject(sql, Integer.class, bt, et, channelType);
+        }
+
+        return num == null ? 0 : num.intValue();
+    }
+
     //每日活跃老用户
     public int getDou(Date date, String appId)
     {
@@ -151,6 +180,29 @@ public class ReportDao
         return num == null ? 0 : num.intValue();
     }
 
+    //N日付费金额
+    public int getDaysPayMoney(Date begin, Date end, String appId, String channelType)
+    {
+        String tableName = appId + "_" + "daily_data";
+        String bt = DateFormat.getDateInstance().format(begin);
+        String et = DateFormat.getDateInstance().format(end);
+        String sql;
+        Integer num;
+
+        if (channelType == ChannelType.ALL)
+        {
+            sql = "select sum(payMoney) from "+tableName+" where loginTime between ? and ?";
+            num = jdbcTemplate.queryForObject(sql, Integer.class, bt, et);
+        }
+        else
+        {
+            sql = "select sum(payMoney) from "+tableName+" where loginTime between ? and ? and channelType = ?";
+            num = jdbcTemplate.queryForObject(sql, Integer.class, bt, et, channelType);
+        }
+
+        return num == null ? 0 : num.intValue();
+    }
+
     //每日付费人数
     public int getPayNum(Date date, String appId, String channelType)
     {
@@ -172,6 +224,29 @@ public class ReportDao
         return num == null ? 0 : num.intValue();
     }
 
+    //N日付费人数
+    public int getDaysPayNum(Date begin, Date end, String appId, String channelType)
+    {
+        String tableName = appId + "_" + "daily_data";
+        String bt = DateFormat.getDateInstance().format(begin);
+        String et = DateFormat.getDateInstance().format(end);
+        String sql;
+        Integer num;
+
+        if (channelType == ChannelType.ALL)
+        {
+            sql = "select distinct count(userId) from "+tableName+" where loginTime between ? and ? and payMoney > 0";
+            num = jdbcTemplate.queryForObject(sql, Integer.class, bt, et);
+        }
+        else
+        {
+            sql = "select distinct count(userId) from "+tableName+" where loginTime between ? and ? and channelType = ? and payMoney > 0";
+            num = jdbcTemplate.queryForObject(sql, Integer.class, bt, et, channelType);
+        }
+
+        return num == null ? 0 : num.intValue();
+    }
+
     //日付费率
     public int getPayRate(Date date, String appId,String channelType)
     {
@@ -180,6 +255,16 @@ public class ReportDao
         if (dau <= 0)
             return 0;
         return (int)((payNum / dau) * 100);
+    }
+
+    //N日付费率
+    public int getDaysPayRate(Date begin, Date end, String appId, String channelType)
+    {
+        float payNum = (float)getDaysPayNum(begin, end, appId, channelType);
+        float nau = (float)getNau(begin, end, appId, channelType);
+        if (nau <= 0)
+            return 0;
+        return (int)((payNum / nau) * 100);
     }
 
     //新用户每日付费金额
@@ -224,6 +309,17 @@ public class ReportDao
         return arpu;
     }
 
+    //N日活跃用户平均付费金额
+    public int getDaysArpu(Date begin, Date end, String appId, String channelType)
+    {
+        float payMoney = (float)getDaysPayMoney(begin, end, appId, channelType);
+        float nau = (float)getNau(begin, end, appId, channelType);
+        if (nau <= 0)
+            return 0;
+        int arpu = (int)(payMoney / nau * 100) ;
+        return arpu;
+    }
+
     //付费用户平均付费金额(百位制,客户端需除以100）
     public int getArppu(Date date, String appId, String channelType)
     {
@@ -232,6 +328,20 @@ public class ReportDao
         if (payNum <= 0)
             return 0;
         int arppu = (int)(payMoney / payNum * 100) ;
+        return arppu;
+    }
+
+    //N日付费用户平均付费金额(百位制,客户端需除以100）
+    public int getDaysArppu(Date begin, Date end, String appId, String channelType)
+    {
+        float payMoney = (float)getDaysPayMoney(begin, end, appId, channelType);
+        float payNum = (float)getDaysPayNum(begin, end, appId, channelType);
+
+        if (payNum <= 0)
+            return 0;
+
+        int arppu = (int)(payMoney / payNum * 100) ;
+
         return arppu;
     }
 
@@ -777,7 +887,7 @@ public class ReportDao
             ChannelReportModel crm = new ChannelReportModel();
 
             int days = (int)((endTime.getTime() - beginTime.getTime()) / (1000*3600*24)) + 1;
-
+            String channelType = (String)map.get("channelType");
             int showNum = ((BigDecimal)map.get("showNum")).intValue();
             int clickNum = ((BigDecimal)map.get("clickNum")).intValue();
             int cpc = ((BigDecimal)map.get("cpc")).intValue() / days;
@@ -796,12 +906,17 @@ public class ReportDao
             int remain7 = ((BigDecimal)map.get("remain7")).intValue() / days;
             int remain30 = ((BigDecimal)map.get("remain30")).intValue() / days;
             int payMoney = ((BigDecimal)map.get("payMoney")).intValue();
-            int payNum = ((BigDecimal)map.get("payNum")).intValue();
-            int payRate = ((BigDecimal)map.get("payRate")).intValue() / days;
-            int arpu = ((BigDecimal)map.get("arpu")).intValue() / days;
-            int arppu = ((BigDecimal)map.get("arppu")).intValue() / days;
 
-            crm.setChannelType((String)map.get("channelType"));
+            int payNum = ((BigDecimal)map.get("payNum")).intValue();
+            //int payNum = getDaysPayNum(beginTime, endTime, appId, channelType);
+            int payRate = ((BigDecimal)map.get("payRate")).intValue() / days;
+            //int payRate = getDaysPayRate(beginTime, endTime, appId, channelType);
+            int arpu = ((BigDecimal)map.get("arpu")).intValue() / days;
+            //int arpu = getDaysArpu(beginTime, endTime, appId, channelType);
+            int arppu = ((BigDecimal)map.get("arppu")).intValue() / days;
+            //int arppu = getDaysArppu(beginTime, endTime, appId, channelType);
+
+            crm.setChannelType(channelType);
             crm.setShowNum(showNum);
             crm.setClickNum(clickNum);
             crm.setCpc(cpc);

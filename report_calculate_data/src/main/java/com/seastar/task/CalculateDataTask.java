@@ -7,6 +7,7 @@ import com.seastar.model.ChannelReportModel;
 import com.seastar.model.DailyModel;
 import com.seastar.model.UserReportModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -26,52 +27,99 @@ public class CalculateDataTask
     @Autowired
     private ReportDao reportDao;
 
-    //report apps
-    private String[] appList = new String[]{"10"};
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    private boolean isRunning;
+
+    public boolean getRunning()
+    {
+        String state = redisTemplate.opsForValue().get("report_server_running");
+
+        if (state.isEmpty())
+            return false;
+
+        if (state == "0")
+            return false;
+
+        return true;
+    }
+
+    public void setRunning(boolean running)
+    {
+        isRunning = running;
+
+        if (isRunning)
+            redisTemplate.opsForValue().set("report_server_running", "1");
+        else
+            redisTemplate.opsForValue().set("report_server_running", "0");
+    }
+
+
 
     //每隔XX时间更新新据
     //@Scheduled(fixedRate = 600000000)       //30秒测试
-    //@Scheduled(cron = "0 */2 * * *")    //每两个小时执行一次
+    @Scheduled(cron = "0 19 20 ? * *")    //每两个小时执行一次
     public void UpdateHourReport()
     {
+        if (getRunning())
+            return;
+
+        setRunning(true);
+
+        List<String> appList = reportDao.getApps();
+
+        long startTime = System.currentTimeMillis();
+        System.out.println("start: " + startTime);
+
+        //更新当天的数据 加for循环主要是用于测试
+        for (int day = 0; day < 1; day++)
+        {
+            Date dt = new Date(System.currentTimeMillis() + dayTime * day);
+
+            for (int i = 0; i < appList.size(); i++)
+            {
+                String appId = appList.get(i);
+
+                UpdateUserData(dt, appId);       //用户综合数据
+
+                UpdateChannelData(dt, appId);    //渠道综合数据
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("totalTime: " + (endTime - startTime) / 1000);
+
+        setRunning(false);
+    }
+
+    //昨日完整数据(每天凌晨6点清算)
+    @Scheduled(cron = "0 14 20 ? * *")
+    //@Scheduled(fixedRate = 120000000)       //60秒测试
+    public void UpdateYestodayReport()
+    {
+        if (getRunning())
+            return;
+
+        setRunning(true);
+
+        List<String> appList = reportDao.getApps();
+
         long startTime = System.currentTimeMillis();
         System.out.println("start: " + startTime);
 
         for (int day = 0; day < 1; day++)
         {
-            Date dt = new Date(System.currentTimeMillis() + dayTime * day);   //0测试用 更新当天的数据
-
-            for (int i = 0; i < appList.length; i++)
-            {
-                String appId = appList[i];
-
-                //UpdateUserData(dt, appId);       //用户综合数据
-
-                UpdateChannelData(dt, appId);   //渠道综合数据
-            }
-        }
-        long endTime = System.currentTimeMillis();
-        System.out.println("totalTime: " + (endTime - startTime) / 1000);
-
-    }
-
-    //昨日完整数据(每天凌晨6点清算)
-    //@Scheduled(cron = "0 6 * * *")
-    //@Scheduled(fixedRate = 120000000)       //60秒测试
-    public void UpdateYestodayReport()
-    {
-        long startTime = System.currentTimeMillis();
-        System.out.println("start: " + startTime);
-
-        for (int day = 0; day < 31; day++)
-        {
             Date dt = new Date(System.currentTimeMillis() + dayTime * day);   //*3测试用 模拟3天后的计算
 
-            for (int i = 0; i < appList.length; i++)
+            for (int i = 0; i < appList.size(); i++)
             {
-                String appId = appList[i];
-                //UpdateUserData(dt, appId);        //用户综合数据
+                String appId = appList.get(i);
+
+                UpdateUserData(dt, appId);          //用户综合数据
                 UpdateRemain(dt, appId);            //用户留存
+                UpdateChannelData(dt, appId);       //渠道数据
+
                 System.out.println("oneDay: " + (System.currentTimeMillis() - startTime)/1000);
                 //UpdateChannelData(dt, appId);     //渠道综合数据
             }
@@ -79,7 +127,10 @@ public class CalculateDataTask
 
         long endTime = System.currentTimeMillis();
         System.out.println("totalTime: " + (endTime - startTime)/1000);
+
         System.out.println("YestodayReport_OK");
+
+        setRunning(false);
     }
 
     /**
@@ -167,6 +218,7 @@ public class CalculateDataTask
         }
 
         long endTime = System.currentTimeMillis();
+
         System.out.println("dayTotalTime: " + (endTime - startTime)/1000);
     }
 }
