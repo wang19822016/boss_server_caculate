@@ -25,21 +25,21 @@ public class ChannelReportController
     @Autowired
     private ChannelReportService channelReportService;
 
-    @RequestMapping(value = "/channel_report/day", method = RequestMethod.POST)
-    public List<ChannelReportModel> OnGetChannelReportListByDay(@RequestBody ChannelReportReq req, HttpServletRequest request)
-    {
-        return channelReportService.doGetChannelReportListByDay(req);
-    }
-
-    @RequestMapping(value = "/channel_report/range", method = RequestMethod.POST)
-    public List<ChannelReportModel> OnGetChannelReportListByRange(@RequestBody ChannelReportReq req, HttpServletRequest request)
-    {
-        return channelReportService.doGetChannelReportListByRange(req);
-    }
-
-    @RequestMapping(value = "/add_ad_details", method = RequestMethod.POST)
-    public AdDetailsRsp OnAddAdDetails(@RequestBody AdDetailsReq req, HttpServletRequest request)
-    {
-        return channelReportService.doAddAdDetails(req);
-    }
+//    @RequestMapping(value = "/channel_report/day", method = RequestMethod.POST)
+//    public List<ChannelReportModel> OnGetChannelReportListByDay(@RequestBody ChannelReportReq req, HttpServletRequest request)
+//    {
+//        return channelReportService.doGetChannelReportListByDay(req);
+//    }
+//
+//    @RequestMapping(value = "/channel_report/range", method = RequestMethod.POST)
+//    public List<ChannelReportModel> OnGetChannelReportListByRange(@RequestBody ChannelReportReq req, HttpServletRequest request)
+//    {
+//        return channelReportService.doGetChannelReportListByRange(req);
+//    }
+//
+//    @RequestMapping(value = "/add_ad_details", method = RequestMethod.POST)
+//    public AdDetailsRsp OnAddAdDetails(@RequestBody AdDetailsReq req, HttpServletRequest request)
+//    {
+//        return channelReportService.doAddAdDetails(req);
+//    }
 }

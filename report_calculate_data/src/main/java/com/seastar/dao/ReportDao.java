@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -24,17 +26,20 @@ public class ReportDao
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
     public List<String> getApps()
     {
         String sql = "select appId from apps";
         List<String> list = jdbcTemplate.queryForList(sql, String.class);
         return list;
     }
+
     //安装数量（全渠道）
     public int getInstallNum(Date date, String appId, String channelType)
     {
-        String tableName = appId + "_" + "device_base";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getDeviceBaseTbName(appId);
+        String dt = sdf.format(date);
         String sql;
         Integer num;
 
@@ -55,8 +60,8 @@ public class ReportDao
     //注册人数
     public int getRegNum(Date date, String appId, String channelType)
     {
-        String tableName = appId + "_" + "user_base";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getUserBaseTbName(appId);
+        String dt = sdf.format(date);
         String sql;
         Integer num;
 
@@ -77,8 +82,8 @@ public class ReportDao
     //有效人数(当天新增)
     public int getValidNum(Date date, String appId, String channelType)
     {
-        String tableName = appId + "_" + "daily_data";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getDailyDataTbName(appId);
+        String dt = sdf.format(date);
         String sql;
         Integer num;
         if (channelType == ChannelType.ALL)
@@ -98,8 +103,8 @@ public class ReportDao
     //每日活跃用户
     public int getDau(Date date, String appId, String channelType)
     {
-        String tableName = appId + "_" + "daily_data";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getDailyDataTbName(appId);
+        String dt = sdf.format(date);
         String sql;
         Integer num;
         if (channelType == ChannelType.ALL)
@@ -119,9 +124,9 @@ public class ReportDao
     //N日活跃用户
     public int getNau(Date begin, Date end, String appId, String channelType)
     {
-        String tableName = appId + "_" + "daily_data";
-        String bt = DateFormat.getDateInstance().format(begin);
-        String et = DateFormat.getDateInstance().format(end);
+        String tableName = getDailyDataTbName(appId);
+        String bt = sdf.format(begin);
+        String et = sdf.format(end);
         String sql;
         Integer num;
 
@@ -142,8 +147,8 @@ public class ReportDao
     //每日活跃老用户
     public int getDou(Date date, String appId)
     {
-        String tableName = appId + "_" + "daily_data";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getDailyDataTbName(appId);
+        String dt = sdf.format(date);
         String sql = "select count(userId) from "+tableName+" where loginTime = ? and loginTime > regTime";
         Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
@@ -152,8 +157,8 @@ public class ReportDao
     //每日活跃新用户(day new user)
     public int getDnu(Date date, String appId)
     {
-        String tableName = appId + "_" + "daily_data";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getDailyDataTbName(appId);
+        String dt = sdf.format(date);
         String sql = "select count(userId) from "+tableName+" where loginTime = ? and loginTime = regTime";
         Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
@@ -162,8 +167,8 @@ public class ReportDao
     //每日付费金额
     public int getPayMoney(Date date, String appId, String channelType)
     {
-        String tableName = appId + "_" + "daily_data";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getDailyDataTbName(appId);
+        String dt = sdf.format(date);
         String sql;
         Integer num;
         if (channelType == ChannelType.ALL)
@@ -183,9 +188,9 @@ public class ReportDao
     //N日付费金额
     public int getDaysPayMoney(Date begin, Date end, String appId, String channelType)
     {
-        String tableName = appId + "_" + "daily_data";
-        String bt = DateFormat.getDateInstance().format(begin);
-        String et = DateFormat.getDateInstance().format(end);
+        String tableName = getDailyDataTbName(appId);
+        String bt = sdf.format(begin);
+        String et = sdf.format(end);
         String sql;
         Integer num;
 
@@ -206,8 +211,8 @@ public class ReportDao
     //每日付费人数
     public int getPayNum(Date date, String appId, String channelType)
     {
-        String tableName = appId + "_" + "daily_data";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getDailyDataTbName(appId);
+        String dt = sdf.format(date);
         String sql;
         Integer num;
         if (channelType == ChannelType.ALL)
@@ -227,9 +232,9 @@ public class ReportDao
     //N日付费人数
     public int getDaysPayNum(Date begin, Date end, String appId, String channelType)
     {
-        String tableName = appId + "_" + "daily_data";
-        String bt = DateFormat.getDateInstance().format(begin);
-        String et = DateFormat.getDateInstance().format(end);
+        String tableName = getDailyDataTbName(appId);
+        String bt = sdf.format(begin);
+        String et = sdf.format(end);
         String sql;
         Integer num;
 
@@ -270,8 +275,8 @@ public class ReportDao
     //新用户每日付费金额
     public int getNewUserPayMoney(Date date, String appId)
     {
-        String tableName = appId + "_" + "daily_data";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getDailyDataTbName(appId);
+        String dt = sdf.format(date);
         String sql = "select sum(payMoney) from "+tableName+" where loginTime = ? and loginTime = regTime";
         //String sql = "select sum(payMoney) from "+tableName+" where DATEDIFF(loginTime,?) = 0";
         Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
@@ -281,8 +286,8 @@ public class ReportDao
     //新用户每日付费人数
     public int getNewUserPayNum(Date date, String appId)
     {
-        String tableName = appId + "_" + "daily_data";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getDailyDataTbName(appId);
+        String dt = sdf.format(date);
         String sql = "select count(userId) from "+tableName+" where loginTime = ? and loginTime = regTime and payMoney > 0 ";
         Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue();
@@ -348,8 +353,8 @@ public class ReportDao
     //留存率(-1代表暂无数据)
     public int getRemainRate(Date date, int days, String appId, String channelType)
     {
-        String tableName = appId + "_" + "daily_data";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getDailyDataTbName(appId);
+        String dt = sdf.format(date);
         String sql;
         List newUsers;
 
@@ -374,10 +379,11 @@ public class ReportDao
         {
             Map userMap = (Map) it.next();
             //sql = "select count(userId) from "+tableName+" where userId = ? and DATEDIFF(loginTime,regTime) = ?";
-            sql = "select count(userId) from "+tableName+" where userId = ? and loginTime = regTime + ?";
+            sql = "select count(userId) from "+tableName+" where userId = ? and loginTime = (regTime + ?)";
+            //sql = "select count(userId) from "+tableName+" where userId = ? and loginTime = dateadd(day,?,regTime)";
             Integer num = jdbcTemplate.queryForObject(sql, Integer.class, userMap.get("userId"), days - 1);
 //            if (num > 0)
-//                System.out.println("num.... " + num);
+            System.out.println("remainNum.... " + num);
             int numValue = num == null ? 0 : num.intValue();
 
             if (numValue > 0)
@@ -390,8 +396,8 @@ public class ReportDao
     //平均在线人数
     public int getAvgOnlineNum(Date date, String appId)
     {
-        String tableName = appId + "_" + "user_login";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = "user_login_" + appId;
+        String dt = sdf.format(date);
         String sql = "select count(userId) from "+tableName+" where serverDate = ?";
         Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         return num == null ? 0 : num.intValue() / 24;
@@ -400,8 +406,8 @@ public class ReportDao
     //平均在线时长
     public int getAvgOnlineTime(Date date, String appId)
     {
-        String tableName = appId + "_" + "daily_data";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getDailyDataTbName(appId);
+        String dt = sdf.format(date);
         String sql = "select sum(onlineTime) from "+tableName+" where loginTime = ?";
         Integer time = jdbcTemplate.queryForObject(sql, Integer.class, dt);
 
@@ -445,8 +451,8 @@ public class ReportDao
     //是否存在某天的日报数据
     public boolean isHaveUserReportData(Date dt, String appId)
     {
-        String tableName = appId + "_" + "user_report";
-        String d = DateFormat.getDateInstance().format(dt);
+        String tableName = getUserReportTbName(appId);
+        String d = sdf.format(dt);
         String sql = "select count(date) from "+tableName+" where date = ?";
         Integer num = jdbcTemplate.queryForObject(sql, Integer.class, d);
         int numValue = num == null ? 0 : num.intValue();
@@ -459,7 +465,7 @@ public class ReportDao
     //存储日报数据
     public void saveUserReportData(UserReportModel urm, String appId)
     {
-        String tableName = appId + "_" + "user_report";
+        String tableName = getUserReportTbName(appId);
 
         jdbcTemplate.update("INSERT INTO "+tableName+"(date, installNum, regNum, validNum, dau, dou, payMoney, payNum, payRate, " +
                         "newUserPayMoney,newUserPayNum,newUserPayRate,arpu,arppu,avgOnlineNum,avgOnlineTime) " +
@@ -486,8 +492,8 @@ public class ReportDao
     //更新N天留存率
     public void updateRemainRate(Date date, int days, int remainRate, String appId)
     {
-        String tableName = appId + "_" + "user_report";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getUserReportTbName(appId);
+        String dt = sdf.format(date);
         try
         {
            int line = jdbcTemplate.update("UPDATE "+tableName+" set remain" + days + " = ? WHERE date = ?" ,
@@ -505,8 +511,8 @@ public class ReportDao
     //更新日报数据
     public void updateUserReportData(UserReportModel urm, String appId)
     {
-        String tableName = appId + "_" + "user_report";
-        String dt = DateFormat.getDateInstance().format(urm.getDate());
+        String tableName = getUserReportTbName(appId);
+        String dt = sdf.format(urm.getDate());
         jdbcTemplate.update("UPDATE "+tableName+" SET installNum = ?, regNum = ?, validNum = ?, dau = ?, dou = ?, " +
                         "payMoney = ?, payNum = ?, payRate = ?, newUserPayMoney = ?,newUserPayNum = ?,newUserPayRate = ?," +
                         "arpu = ?,arppu = ?,avgOnlineNum = ?,avgOnlineTime = ? " +
@@ -537,8 +543,8 @@ public class ReportDao
     //获得当日的渠道列表
     public List<String> getChannelListByDate(Date date, String appId)
     {
-        String tableName = appId + "_" + "device_base";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getDeviceBaseTbName(appId);
+        String dt = sdf.format(date);
         String sql = "select distinct channelType from " + tableName + " where serverDate = ?";
         List<String> list = jdbcTemplate.queryForList(sql, String.class, dt);
         return list;
@@ -578,8 +584,8 @@ public class ReportDao
     //是否存在某天的渠道数据
     public boolean isHaveChannelReportData(String appId, Date date, String channelType)
     {
-        String tableName = appId + "_" + "channel_report";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getChannelReportTbName(appId);
+        String dt = sdf.format(date);
 
         String sql = "select count(id) from "+tableName+" where date = ? and channelType = ?";
         Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt, channelType);
@@ -595,7 +601,7 @@ public class ReportDao
     //存储渠道数据
     public void saveChannelReportData(ChannelReportModel crm, String appId)
     {
-        String tableName = appId + "_" + "channel_report";
+        String tableName = getChannelReportTbName(appId);
 
         jdbcTemplate.update("INSERT INTO "+tableName+"(date, channelType, cpc, cpm, installNum, cpi, validNum, clickRate, installRate,regRate, validRate, " +
                         "roi, remain2, remain3, remain7, remain30,payMoney,payNum,payRate,arpu,arppu) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -626,8 +632,8 @@ public class ReportDao
     //更新渠道数据
     public void updateChannelReportData(ChannelReportModel crm, String appId)
     {
-        String tableName = appId + "_" + "channel_report";
-        String dt = DateFormat.getDateInstance().format(crm.getDate());
+        String tableName = getChannelReportTbName(appId);
+        String dt = sdf.format(crm.getDate());
         jdbcTemplate.update("UPDATE "+tableName+" SET showNum = ?, clickNum = ?, cpc = ?, cpm = ?, installNum = ?, cpi = ?, validNum = ?, " +
                         "clickRate = ?, installRate = ?, regRate = ?, validRate = ?, roi = ?, costMoney = ?, remain2 = ?, " +
                         "remain3 = ?, remain7 = ?, remain30 = ?, payMoney = ?,payNum = ?,payRate = ?, arpu = ?,arppu = ? " +
@@ -678,8 +684,8 @@ public class ReportDao
     //单用户安装成本
     public int getCpi(Date date, String appId, String channelType)
     {
-        String tableName = appId + "_" + "channel_report";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getChannelReportTbName(appId);
+        String dt = sdf.format(date);
 
         int money = getCostMoney(date, appId, channelType);
         int installNum = getInstallNum(date, appId, channelType);
@@ -693,7 +699,7 @@ public class ReportDao
     //点击率
     public int getClickRate(Date date, String appId, String channelType)
     {
-        String tableName = appId + "_" + "channel_report";
+        String tableName = getChannelReportTbName(appId);
         int showNum = getShowNum(date, appId, channelType);
         int clickNum = getClickNum(date, appId, channelType);
 
@@ -706,8 +712,7 @@ public class ReportDao
     //安装率
     public int getInstallRate(Date date, String appId, String channelType)
     {
-        String tableName = appId + "_" + "channel_report";
-
+        String tableName = getChannelReportTbName(appId);
         int clickNum = getClickNum(date, appId, channelType);
         int installNum = getInstallNum(date, appId, channelType);
 
@@ -720,8 +725,8 @@ public class ReportDao
     //花费
     public int getCostMoney(Date date, String appId, String channelType)
     {
-        String tableName = appId + "_" + "channel_report";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getChannelReportTbName(appId);
+        String dt = sdf.format(date);
         String sql;
         Integer money;
 
@@ -754,8 +759,8 @@ public class ReportDao
     //展示数
     public int getShowNum(Date date, String appId, String channelType)
     {
-        String tableName = appId + "_" + "channel_report";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getChannelReportTbName(appId);
+        String dt = sdf.format(date);
         String sql;
         Integer showNum;
 
@@ -776,8 +781,8 @@ public class ReportDao
     //点击数
     public int getClickNum(Date date, String appId, String channelType)
     {
-        String tableName = appId + "_" + "channel_report";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getChannelReportTbName(appId);
+        String dt = sdf.format(date);
         String sql;
         Integer clickNum;
 
@@ -815,9 +820,9 @@ public class ReportDao
     //获得日报列表
     public List<UserReportModel> getUserReportList(String appId, Date beginTime, Date endTime)
     {
-        String tableName = appId + "_" + "user_report";
-        String bt = DateFormat.getDateInstance().format(beginTime);
-        String et = DateFormat.getDateInstance().format(endTime);
+        String tableName = getUserReportTbName(appId);
+        String bt = sdf.format(beginTime);
+        String et = sdf.format(endTime);
 
         String sql = "select * from " + tableName + " where date between ? and ?";
 
@@ -840,9 +845,9 @@ public class ReportDao
     //按单日查询
     public List<ChannelReportModel> getChannelReportListByDay(String appId, Date beginTime, Date endTime)
     {
-        String tableName = appId + "_" + "channel_report";
-        String bt = DateFormat.getDateInstance().format(beginTime);
-        String et = DateFormat.getDateInstance().format(endTime);
+        String tableName = getChannelReportTbName(appId);
+        String bt = sdf.format(beginTime);
+        String et = sdf.format(endTime);
 
         String sql = "select * from " + tableName + " where date between ? and ? order by date,channelType";
 
@@ -865,9 +870,9 @@ public class ReportDao
     //按累计查询
     public List<ChannelReportModel> getChannelReportListByRange(String appId, Date beginTime, Date endTime)
     {
-        String tableName = appId + "_" + "channel_report";
-        String bt = DateFormat.getDateInstance().format(beginTime);
-        String et = DateFormat.getDateInstance().format(endTime);
+        String tableName = getChannelReportTbName(appId);
+        String bt = sdf.format(beginTime);
+        String et = sdf.format(endTime);
 
         String sql = "select channelType, sum(showNum) as showNum, sum(clickNum) as clickNum, sum(cpc) as cpc, sum(cpm) as cpm," +
                 "sum(installNum) as installNum, sum(cpi) as cpi, sum(validNum) as validNum, sum(clickRate) as clickRate," +
@@ -949,7 +954,7 @@ public class ReportDao
     //添加广告数据(手动)
     public void addAdDetails(String appId, Date date, String channelType, int showNum, int clickNum, int costMoney)
     {
-        String tableName = appId + "_" + "channel_report";
+        String tableName = getChannelReportTbName(appId);
 
         jdbcTemplate.update("INSERT  INTO " + tableName + "(date, showNum, clickNum, costMoney) VALUES (?,?,?,?)",
                 date, channelType, showNum, clickNum, costMoney);
@@ -958,10 +963,176 @@ public class ReportDao
     //更新广告数据
     public void updateAdDetails(String appId, Date date, String channelType, int showNum, int clickNum, int costMoney)
     {
-        String tableName = appId + "_" + "channel_report";
-        String dt = DateFormat.getDateInstance().format(date);
+        String tableName = getChannelReportTbName(appId);
+        String dt = sdf.format(date);
 
         jdbcTemplate.update("UPDATE "+tableName+" set showNum = ?, clickNum = ?, costMoney = ? WHERE date = ? and " +
                         "channelType = ?",showNum, clickNum ,costMoney,dt, channelType);
     }
+
+    //临时添加用户（临时用)
+    public void addTempUser()
+    {
+        String  sql = "select accountid, logintime, ip from login order by logintime";
+        List newUsers = jdbcTemplate.queryForList(sql);
+
+        Iterator it = newUsers.iterator();
+
+        while(it.hasNext())
+        {
+            Map userMap = (Map) it.next();
+
+            String id = (String)userMap.get("accountid");
+
+            String sq = "select count(*) from user where userId = ?";
+
+            Integer num = jdbcTemplate.queryForObject(sq, Integer.class, id);
+
+            int numValue = num == null ? 0 : num.intValue();
+
+            if (numValue > 0)
+                continue;
+
+            jdbcTemplate.update("INSERT INTO user(userId,serverDate) VALUES (?,?)",userMap.get("accountid"),userMap.get("logintime"));
+            System.out.println("one data");
+        }
+    }
+
+    public void addTempRate()
+    {
+        long startTime = System.currentTimeMillis() - 10 * 24 * 60 * 60 * 1000;
+        long endTime = System.currentTimeMillis();
+
+
+    }
+    //临时计算留存
+    //留存率(-1代表暂无数据)
+    public int getTempRemainRate(Date date, int days)
+    {
+        String dt = sdf.format(date);
+        String sql;
+        List newUsers;
+
+        sql = "select * from user where serverDate = ?";
+        newUsers = jdbcTemplate.queryForList(sql, dt);
+
+        System.out.println("userLen: " + newUsers.size());
+
+        if (newUsers.size() <= 0)
+            return  - 1;
+
+        Iterator it = newUsers.iterator();
+        int remainNum = 0;
+
+        while(it.hasNext())
+        {
+            Map<String, Object> userMap = (Map<String, Object>) it.next();
+
+//            Date rd = (Date)userMap.get("serverDate");
+//            Date dd = new Date(rd.getTime() + (days - 1)*24*60*60*1000);
+//            String ld = sdf.format(dd);
+
+            //sql = "select count(accountid) from login where accountid = ? and datediff(loginDate, ?) = ?";
+
+            sql = "select count(*) from login where accountid = ? and loginDate = (regDate + ?)";
+            //sql = "select count(*) from login where accountid = ? and loginDate = ?";
+            Integer num = jdbcTemplate.queryForObject(sql, Integer.class, userMap.get("userId"), days - 1);
+            //Integer num = jdbcTemplate.queryForObject(sql, Integer.class, userMap.get("userId"), ld);
+
+            if (num > 0)
+                System.out.println("num.... " + days + " " + num);
+
+            int numValue = num == null ? 0 : num.intValue();
+
+            if (numValue > 0)
+                remainNum++;
+        }
+
+        return (int)((float) remainNum / (float)newUsers.size() * 100);
+    }
+
+    //临时注册用户（篮球)
+    public int getTempUserNum(Date date)
+    {
+        String dt = sdf.format(date);
+
+        String sq = "select count(*) from user where serverDate = ?";
+
+        Integer num = jdbcTemplate.queryForObject(sq, Integer.class, dt);
+
+        int numValue = num == null ? 0 : num.intValue();
+
+        return numValue;
+
+    }
+
+    public void saveTempRemainRate(Date date, int regNum, int remain2, int remain3, int remain4, int remain5, int remain6, int remain7, int remain8, int remain9, int remain10, int remain11, int remain12, int remain13, int remain14, int remain15)
+    {
+        String dt = sdf.format(date);
+
+        String sq = "select count(*) from remain where date = ?";
+
+        Integer num = jdbcTemplate.queryForObject(sq, Integer.class, dt);
+
+        int numValue = num == null ? 0 : num.intValue();
+
+        if (numValue > 0)
+        {
+             jdbcTemplate.update("UPDATE remain set regNum = ?, remain2 = ?, remain3 = ?, remain4 = ?, remain5 = ?, remain6 = ?, " +
+                     "remain7 = ?, remain8 = ?, remain9 = ?, remain10 = ?, remain11 = ?, remain12 = ?, remain13 = ?, remain14 = ?," +
+                     " remain15 = ? where date = ?", regNum, remain2, remain3, remain4, remain5, remain6, remain7, remain8, remain9, remain10,remain11, remain12, remain13, remain14, remain15,dt);
+        }
+        else
+        {
+            jdbcTemplate.update("INSERT INTO remain(date, regNum, remain2, remain3,remain4, remain5, remain6,remain7, remain8, remain9," +
+                    "remain10, remain11, remain12,remain13, remain14, remain15) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", date, regNum, remain2, remain3, remain4, remain5, remain6, remain7, remain8, remain9, remain10,remain11, remain12, remain13, remain14, remain15);
+        }
+    }
+
+    public void saveTempRemainRate2(Date date, int regNum, int remain, int days)
+    {
+        String dt = sdf.format(date);
+
+        String sq = "select count(*) from remain where date = ?";
+
+        Integer num = jdbcTemplate.queryForObject(sq, Integer.class, dt);
+
+        int numValue = num == null ? 0 : num.intValue();
+
+        String column = "remain" + days;
+        if (numValue > 0)
+        {
+            jdbcTemplate.update("UPDATE remain set regNum = ?, ? = ? where date = ?", regNum,column,remain,dt);
+        }
+        else
+        {
+            jdbcTemplate.update("INSERT INTO remain(date, regNum, ?) VALUES (?,?,?)", column,date, regNum, remain);
+        }
+    }
+
+    private String getDeviceBaseTbName(String appId)
+    {
+        return "device_base_" + appId;
+    }
+
+    private String getUserBaseTbName(String appId)
+    {
+        return "user_base_" + appId;
+    }
+
+    private String getDailyDataTbName(String appId)
+    {
+        return "daily_data_" + appId;
+    }
+
+    private String getUserReportTbName(String appId)
+    {
+        return "user_report_" + appId;
+    }
+
+    private String getChannelReportTbName(String appId)
+    {
+        return "channel_report_" + appId;
+    }
+
 }

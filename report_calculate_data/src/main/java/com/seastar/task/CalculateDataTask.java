@@ -7,7 +7,6 @@ import com.seastar.model.ChannelReportModel;
 import com.seastar.model.DailyModel;
 import com.seastar.model.UserReportModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -27,53 +26,20 @@ public class CalculateDataTask
     @Autowired
     private ReportDao reportDao;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
-
-    private boolean isRunning;
-
-    public boolean getRunning()
-    {
-        String state = redisTemplate.opsForValue().get("report_server_running");
-
-        if (state.isEmpty())
-            return false;
-
-        if (state == "0")
-            return false;
-
-        return true;
-    }
-
-    public void setRunning(boolean running)
-    {
-        isRunning = running;
-
-        if (isRunning)
-            redisTemplate.opsForValue().set("report_server_running", "1");
-        else
-            redisTemplate.opsForValue().set("report_server_running", "0");
-    }
-
-
 
     //每隔XX时间更新新据
-    //@Scheduled(fixedRate = 600000000)       //30秒测试
-    @Scheduled(cron = "0 19 20 ? * *")    //每两个小时执行一次
+    //@Scheduled(fixedRate = 30000)         //30秒测试
+    //@Scheduled(cron = "0 19 20 ? * *")    //每天20点19执行一次
+    //@Scheduled(fixedDelay = 1000 * 60 * 5, initialDelay = 10000)
     public void UpdateHourReport()
     {
-        if (getRunning())
-            return;
-
-        setRunning(true);
-
         List<String> appList = reportDao.getApps();
 
         long startTime = System.currentTimeMillis();
         System.out.println("start: " + startTime);
 
         //更新当天的数据 加for循环主要是用于测试
-        for (int day = 0; day < 1; day++)
+        for (int day = 0; day < 2; day++)
         {
             Date dt = new Date(System.currentTimeMillis() + dayTime * day);
 
@@ -89,26 +55,20 @@ public class CalculateDataTask
 
         long endTime = System.currentTimeMillis();
         System.out.println("totalTime: " + (endTime - startTime) / 1000);
-
-        setRunning(false);
     }
 
-    //昨日完整数据(每天凌晨6点清算)
-    @Scheduled(cron = "0 14 20 ? * *")
-    //@Scheduled(fixedRate = 120000000)       //60秒测试
+    //昨日完整数据(每天国内8点清算)
+    //@Scheduled(fixedRate = 60000)       //60秒测试
+    //@Scheduled(cron = "0 14 20 ? * *")
+    @Scheduled(fixedDelay = 1000 * 60 * 5, initialDelay = 5000)
     public void UpdateYestodayReport()
     {
-        if (getRunning())
-            return;
-
-        setRunning(true);
-
         List<String> appList = reportDao.getApps();
 
         long startTime = System.currentTimeMillis();
         System.out.println("start: " + startTime);
 
-        for (int day = 0; day < 1; day++)
+        for (int day = 0; day < 15; day++)
         {
             Date dt = new Date(System.currentTimeMillis() + dayTime * day);   //*3测试用 模拟3天后的计算
 
@@ -121,7 +81,6 @@ public class CalculateDataTask
                 UpdateChannelData(dt, appId);       //渠道数据
 
                 System.out.println("oneDay: " + (System.currentTimeMillis() - startTime)/1000);
-                //UpdateChannelData(dt, appId);     //渠道综合数据
             }
         }
 
@@ -129,8 +88,6 @@ public class CalculateDataTask
         System.out.println("totalTime: " + (endTime - startTime)/1000);
 
         System.out.println("YestodayReport_OK");
-
-        setRunning(false);
     }
 
     /**
@@ -220,5 +177,49 @@ public class CalculateDataTask
         long endTime = System.currentTimeMillis();
 
         System.out.println("dayTotalTime: " + (endTime - startTime)/1000);
+    }
+
+    //@Scheduled(fixedDelay = 1000 * 60 * 50, initialDelay = 1)
+    public void UpdateTempReport()
+    {
+        reportDao.addTempUser();
+    }
+
+    //@Scheduled(fixedDelay = 1000 * 60 * 50, initialDelay = 1)
+    //@Scheduled(cron = "0 47 11 ? * *")
+    public void AddTempRemain()
+    {
+        long startTime = System.currentTimeMillis();
+
+        System.out.println("start: " + startTime);
+
+        for (int day = -16; day < 0; day++)
+        {
+            Date dt = new Date(System.currentTimeMillis() + dayTime * day);   //*3测试用 模拟3天后的计算
+
+            int regNum = reportDao.getTempUserNum(dt);
+            int remain2 = reportDao.getTempRemainRate(dt,2);
+            //System.out.println("linedata");
+            int remain3 = reportDao.getTempRemainRate(dt,3);
+            int remain4 = reportDao.getTempRemainRate(dt,4);
+            int remain5 = reportDao.getTempRemainRate(dt,5);
+            int remain6 = reportDao.getTempRemainRate(dt,6);
+            int remain7 = reportDao.getTempRemainRate(dt,7);
+            int remain8 = reportDao.getTempRemainRate(dt,8);
+            int remain9 = reportDao.getTempRemainRate(dt,9);
+            int remain10 = reportDao.getTempRemainRate(dt,10);
+            int remain11 = reportDao.getTempRemainRate(dt,11);
+            int remain12 = reportDao.getTempRemainRate(dt,12);
+            int remain13 = reportDao.getTempRemainRate(dt,13);
+            int remain14 = reportDao.getTempRemainRate(dt,14);
+            int remain15 = reportDao.getTempRemainRate(dt,15);
+
+            reportDao.saveTempRemainRate(dt, regNum, remain2, remain3,remain4,remain5,remain6,remain7,remain8,remain9,remain10,remain11,remain12,remain13,remain14,remain15);
+            System.out.println("oneDayRemain: " + (System.currentTimeMillis() - startTime)/1000);
+        }
+
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("totalTime: " + (endTime - startTime)/1000);
     }
 }

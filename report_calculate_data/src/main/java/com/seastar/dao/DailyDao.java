@@ -1,5 +1,6 @@
 package com.seastar.dao;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seastar.model.DailyModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,11 @@ public class DailyDao
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    public DailyDao()
+    {
+        objectMapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
+    }
+
     //最早日期数据(当前游戏报表)
     public DailyModel findMinDateData(String appId)
     {
@@ -33,7 +39,7 @@ public class DailyDao
 
         try
         {
-            String tableName = appId + "_" + "daily_data";
+            String tableName = "daily_data" + "_" +  appId;
 
             String sql = "select * from " + tableName + " ORDER BY loginTime ASC LIMIT 1";
 

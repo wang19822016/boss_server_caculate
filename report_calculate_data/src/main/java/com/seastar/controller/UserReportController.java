@@ -21,9 +21,9 @@ public class UserReportController
     @Autowired
     private UserReportService userReportService;
 
-    @RequestMapping(value = "/user_report", method = RequestMethod.POST)
-    public List<UserReportModel> OnGetUserReportList(@RequestBody UserReportReq req, HttpServletRequest request)
-    {
-        return userReportService.doGetUserReportList(req);
-    }
+//    @RequestMapping(value = "/user_report", method = RequestMethod.POST)
+//    public List<UserReportModel> OnGetUserReportList(@RequestBody UserReportReq req, HttpServletRequest request)
+//    {
+//        return userReportService.doGetUserReportList(req);
+//    }
 }
