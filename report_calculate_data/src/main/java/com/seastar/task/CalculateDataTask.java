@@ -59,8 +59,8 @@ public class CalculateDataTask
 
     //昨日完整数据(每天国内8点清算)
     //@Scheduled(fixedRate = 60000)       //60秒测试
-    //@Scheduled(cron = "0 14 20 ? * *")
-    @Scheduled(fixedDelay = 1000 * 60 * 5, initialDelay = 5000)
+    //@Scheduled(cron = "0 0 9 ? * *")
+    @Scheduled(fixedDelay = 1000 * 60 * 60 * 4, initialDelay = 5000)
     public void UpdateYestodayReport()
     {
         List<String> appList = reportDao.getApps();
@@ -68,7 +68,12 @@ public class CalculateDataTask
         long startTime = System.currentTimeMillis();
         System.out.println("start: " + startTime);
 
-        for (int day = 0; day < 15; day++)
+//        long l = Long.parseLong("1491548288392");
+//        Date date = new Date(l);
+//        System.out.println(date.toString());
+
+        System.out.println("aa: " + new Date().toString());
+        for (int day = 0; day < 1; day++)
         {
             Date dt = new Date(System.currentTimeMillis() + dayTime * day);   //*3测试用 模拟3天后的计算
 
@@ -120,8 +125,8 @@ public class CalculateDataTask
                 continue;
 
             //以后留存率会有单独报表则按照days存储就可以了（如4日，5日留存等）
-            if (days == 2 || days == 3 || days == 7 || days == 30)
-            {
+//            if (days == 2 || days == 3 || days == 7 || days == 30)
+//            {
                 //当天新增用户的N天留存率
                 Date currentDay = new Date(time);
                 int raminRate = reportDao.getRemainRate(currentDay, days, appId, ChannelType.ALL);
@@ -129,7 +134,7 @@ public class CalculateDataTask
                 //0代表当天数据为null
                 if (raminRate > 0)
                     reportDao.updateRemainRate(currentDay, days, raminRate, appId);
-            }
+//            }
         }
     }
 
