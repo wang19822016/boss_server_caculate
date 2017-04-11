@@ -15,10 +15,10 @@ public class UserReportModel
     private int validNum;
     private int dau;
     private int dou;
-    private int payMoney;
+    private float payMoney;
     private int payNum;
     private int payRate;
-    private int newUserPayMoney;
+    private float newUserPayMoney;
     private int newUserPayNum;
     private int newUserPayRate;
     private int arpu;
@@ -86,11 +86,11 @@ public class UserReportModel
         this.dou = dou;
     }
 
-    public int getPayMoney() {
+    public float getPayMoney() {
         return payMoney;
     }
 
-    public void setPayMoney(int payMoney) {
+    public void setPayMoney(float payMoney) {
         this.payMoney = payMoney;
     }
 
@@ -110,11 +110,11 @@ public class UserReportModel
         this.payRate = payRate;
     }
 
-    public int getNewUserPayMoney() {
+    public float getNewUserPayMoney() {
         return newUserPayMoney;
     }
 
-    public void setNewUserPayMoney(int newUserPayMoney) {
+    public void setNewUserPayMoney(float newUserPayMoney) {
         this.newUserPayMoney = newUserPayMoney;
     }
 
@@ -207,10 +207,10 @@ public class UserReportModel
         validNum = (int)map.get("validNum");
         dau = (int)map.get("dau");
         dou = (int)map.get("dou");
-        payMoney = (int)map.get("payMoney");
+        payMoney = (float)map.get("payMoney");
         payNum = (int)map.get("payNum");
         payRate = (int)map.get("payRate");
-        newUserPayMoney = (int)map.get("newUserPayMoney");
+        newUserPayMoney = (float)map.get("newUserPayMoney");
         newUserPayNum = (int)map.get("newUserPayNum");
         newUserPayRate = (int)map.get("newUserPayRate");
         arpu = (int)map.get("arpu");

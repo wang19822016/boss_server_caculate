@@ -23,12 +23,12 @@ public class ChannelReportModel
     private int regRate;
     private int validRate;
     private int roi;
-    private int costMoney;
+    private float costMoney;
     private int remain2;
     private int remain3;
     private int remain7;
     private int remain30;
-    private int payMoney;
+    private float payMoney;
     private int payNum;
     private int payRate;
     private int arpu;
@@ -51,13 +51,13 @@ public class ChannelReportModel
         regRate = (int)map.get("regRate");
         validRate = (int)map.get("validRate");
         roi = (int)map.get("roi");
-        costMoney = (int)map.get("costMoney");
+        costMoney = (float)map.get("costMoney");
         remain2 = (int)map.get("remain2");
         remain3 = (int)map.get("remain3");
         remain7 = (int)map.get("remain7");
         remain30 = (int)map.get("remain30");
 
-        payMoney = (int)map.get("payMoney");
+        payMoney = (float)map.get("payMoney");
         payNum = (int)map.get("payNum");
         payRate = (int)map.get("payRate");
         arpu = (int)map.get("arpu");
@@ -184,11 +184,11 @@ public class ChannelReportModel
         this.roi = roi;
     }
 
-    public int getCostMoney() {
+    public float getCostMoney() {
         return costMoney;
     }
 
-    public void setCostMoney(int costMoney) {
+    public void setCostMoney(float costMoney) {
         this.costMoney = costMoney;
     }
 
@@ -224,11 +224,11 @@ public class ChannelReportModel
         this.remain30 = remain30;
     }
 
-    public int getPayMoney() {
+    public float getPayMoney() {
         return payMoney;
     }
 
-    public void setPayMoney(int payMoney) {
+    public void setPayMoney(float payMoney) {
         this.payMoney = payMoney;
     }
 

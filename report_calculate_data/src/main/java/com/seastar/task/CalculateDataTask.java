@@ -60,7 +60,7 @@ public class CalculateDataTask
     //昨日完整数据(每天国内8点清算)
     //@Scheduled(fixedRate = 60000)       //60秒测试
     //@Scheduled(cron = "0 0 9 ? * *")
-    @Scheduled(fixedDelay = 1000 * 60 * 60 * 4, initialDelay = 5000)
+    @Scheduled(fixedDelay = 1000 * 60 * 5  , initialDelay = 5000)
     public void UpdateYestodayReport()
     {
         List<String> appList = reportDao.getApps();
@@ -198,26 +198,43 @@ public class CalculateDataTask
 
         System.out.println("start: " + startTime);
 
-        for (int day = -16; day < 0; day++)
+        for (int day = -3; day < 0; day++)
         {
             Date dt = new Date(System.currentTimeMillis() + dayTime * day);   //*3测试用 模拟3天后的计算
 
             int regNum = reportDao.getTempUserNum(dt);
+            if (regNum <= 0)
+                continue;
+
             int remain2 = reportDao.getTempRemainRate(dt,2);
             //System.out.println("linedata");
             int remain3 = reportDao.getTempRemainRate(dt,3);
-            int remain4 = reportDao.getTempRemainRate(dt,4);
-            int remain5 = reportDao.getTempRemainRate(dt,5);
-            int remain6 = reportDao.getTempRemainRate(dt,6);
-            int remain7 = reportDao.getTempRemainRate(dt,7);
-            int remain8 = reportDao.getTempRemainRate(dt,8);
-            int remain9 = reportDao.getTempRemainRate(dt,9);
-            int remain10 = reportDao.getTempRemainRate(dt,10);
-            int remain11 = reportDao.getTempRemainRate(dt,11);
-            int remain12 = reportDao.getTempRemainRate(dt,12);
-            int remain13 = reportDao.getTempRemainRate(dt,13);
-            int remain14 = reportDao.getTempRemainRate(dt,14);
-            int remain15 = reportDao.getTempRemainRate(dt,15);
+//            int remain4 = reportDao.getTempRemainRate(dt,4);
+//            int remain5 = reportDao.getTempRemainRate(dt,5);
+//            int remain6 = reportDao.getTempRemainRate(dt,6);
+//            int remain7 = reportDao.getTempRemainRate(dt,7);
+//            int remain8 = reportDao.getTempRemainRate(dt,8);
+//            int remain9 = reportDao.getTempRemainRate(dt,9);
+//            int remain10 = reportDao.getTempRemainRate(dt,10);
+//            int remain11 = reportDao.getTempRemainRate(dt,11);
+//            int remain12 = reportDao.getTempRemainRate(dt,12);
+//            int remain13 = reportDao.getTempRemainRate(dt,13);
+//            int remain14 = reportDao.getTempRemainRate(dt,14);
+//            int remain15 = reportDao.getTempRemainRate(dt,15);
+
+
+            int remain4 = 0;
+            int remain5 = 0;
+            int remain6 = 0;
+            int remain7 = 0;
+            int remain8 = 0;
+            int remain9 = 0;
+            int remain10 = 0;
+            int remain11 = 0;
+            int remain12 = 0;
+            int remain13 = 0;
+            int remain14 = 0;
+            int remain15 = 0;
 
             reportDao.saveTempRemainRate(dt, regNum, remain2, remain3,remain4,remain5,remain6,remain7,remain8,remain9,remain10,remain11,remain12,remain13,remain14,remain15);
             System.out.println("oneDayRemain: " + (System.currentTimeMillis() - startTime)/1000);

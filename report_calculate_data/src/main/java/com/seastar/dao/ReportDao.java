@@ -165,7 +165,7 @@ public class ReportDao
     }
 
     //每日付费金额
-    public int getPayMoney(Date date, String appId, String channelType)
+    public float getPayMoney(Date date, String appId, String channelType)
     {
         String tableName = getDailyDataTbName(appId);
         String dt = sdf.format(date);
@@ -182,11 +182,11 @@ public class ReportDao
             num = jdbcTemplate.queryForObject(sql, Integer.class, dt, channelType);
         }
 
-        return num == null ? 0 : num.intValue();
+        return num == null ? 0 : num.floatValue();
     }
 
     //N日付费金额
-    public int getDaysPayMoney(Date begin, Date end, String appId, String channelType)
+    public float getDaysPayMoney(Date begin, Date end, String appId, String channelType)
     {
         String tableName = getDailyDataTbName(appId);
         String bt = sdf.format(begin);
@@ -205,7 +205,7 @@ public class ReportDao
             num = jdbcTemplate.queryForObject(sql, Integer.class, bt, et, channelType);
         }
 
-        return num == null ? 0 : num.intValue();
+        return num == null ? 0 : num.floatValue();
     }
 
     //每日付费人数
@@ -273,14 +273,14 @@ public class ReportDao
     }
 
     //新用户每日付费金额
-    public int getNewUserPayMoney(Date date, String appId)
+    public float getNewUserPayMoney(Date date, String appId)
     {
         String tableName = getDailyDataTbName(appId);
         String dt = sdf.format(date);
         String sql = "select sum(payMoney) from "+tableName+" where loginTime = ? and loginTime = regTime";
         //String sql = "select sum(payMoney) from "+tableName+" where DATEDIFF(loginTime,?) = 0";
         Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
-        return num == null ? 0 : num.intValue();
+        return num == null ? 0 : num.floatValue();
     }
 
     //新用户每日付费人数
@@ -306,8 +306,9 @@ public class ReportDao
     //活跃用户平均付费金额(百位制,客户端需除以100）
     public int getArpu(Date date, String appId, String channelType)
     {
-        float payMoney = (float)getPayMoney(date, appId, channelType);
+        float payMoney = getPayMoney(date, appId, channelType);
         float dau = (float)getDau(date, appId, channelType);
+
         if (dau <= 0)
             return 0;
         int arpu = (int)(payMoney / dau * 100) ;
@@ -317,7 +318,7 @@ public class ReportDao
     //N日活跃用户平均付费金额
     public int getDaysArpu(Date begin, Date end, String appId, String channelType)
     {
-        float payMoney = (float)getDaysPayMoney(begin, end, appId, channelType);
+        float payMoney = getDaysPayMoney(begin, end, appId, channelType);
         float nau = (float)getNau(begin, end, appId, channelType);
         if (nau <= 0)
             return 0;
@@ -328,7 +329,7 @@ public class ReportDao
     //付费用户平均付费金额(百位制,客户端需除以100）
     public int getArppu(Date date, String appId, String channelType)
     {
-        float payMoney = (float)getPayMoney(date, appId, channelType);
+        float payMoney = getPayMoney(date, appId, channelType);
         float payNum = (float)getPayNum(date, appId, channelType);
         if (payNum <= 0)
             return 0;
@@ -339,7 +340,7 @@ public class ReportDao
     //N日付费用户平均付费金额(百位制,客户端需除以100）
     public int getDaysArppu(Date begin, Date end, String appId, String channelType)
     {
-        float payMoney = (float)getDaysPayMoney(begin, end, appId, channelType);
+        float payMoney = getDaysPayMoney(begin, end, appId, channelType);
         float payNum = (float)getDaysPayNum(begin, end, appId, channelType);
 
         if (payNum <= 0)
@@ -687,13 +688,13 @@ public class ReportDao
         String tableName = getChannelReportTbName(appId);
         String dt = sdf.format(date);
 
-        int money = getCostMoney(date, appId, channelType);
+        float money = getCostMoney(date, appId, channelType);
         int installNum = getInstallNum(date, appId, channelType);
 
         if (installNum <= 0)
             return -1;
 
-        return (int)((float) money / (float)installNum * 100);
+        return (int)( money / (float)installNum * 100);
     }
 
     //点击率
@@ -723,7 +724,7 @@ public class ReportDao
     }
 
     //花费
-    public int getCostMoney(Date date, String appId, String channelType)
+    public float getCostMoney(Date date, String appId, String channelType)
     {
         String tableName = getChannelReportTbName(appId);
         String dt = sdf.format(date);
@@ -741,19 +742,19 @@ public class ReportDao
             money = jdbcTemplate.queryForObject(sql, Integer.class, dt, channelType);
         }
 
-        return money == null ? 0 : money.intValue();
+        return money == null ? 0 : money.floatValue();
     }
 
     //回报率
     public int getRoi(Date date, String appId, String channelType)
     {
-        int payMoney = getPayMoney(date, appId, channelType);
-        int costMoney = getCostMoney(date, appId, channelType);
+        float payMoney = getPayMoney(date, appId, channelType);
+        float costMoney = getCostMoney(date, appId, channelType);
 
         if (costMoney <= 0)
             return -1;
 
-        return (int)((float) payMoney / (float)costMoney * 100);
+        return (int)( payMoney / costMoney * 100);
     }
 
     //展示数
@@ -803,17 +804,17 @@ public class ReportDao
     //按点击价格购买
     public int getCpc(Date date, String appId, String channelType)
     {
-        int costMoney = getCostMoney(date, appId, channelType);
+        float costMoney = getCostMoney(date, appId, channelType);
         int clickNum = getClickNum(date, appId, channelType);
-        return (int)((float) costMoney / (float)clickNum * 100);
+        return (int)(costMoney / (float)clickNum * 100);
     }
 
     //按展示1000次购买
     public int getCpm(Date date, String appId, String channelType)
     {
-        int costMoney = getCostMoney(date, appId, channelType);
+        float costMoney = getCostMoney(date, appId, channelType);
         int showNum = getShowNum(date, appId, channelType);
-        return (int)((float) costMoney / (float)showNum * 1000 * 100);
+        return (int)(costMoney / (float)showNum * 1000 * 100);
     }
 
 
@@ -905,12 +906,12 @@ public class ReportDao
             int regRate = ((BigDecimal)map.get("regRate")).intValue() / days;
             int validRate = ((BigDecimal)map.get("validRate")).intValue() / days;
             int roi = ((BigDecimal)map.get("roi")).intValue();
-            int costMoney = ((BigDecimal)map.get("costMoney")).intValue();
+            float costMoney = ((BigDecimal)map.get("costMoney")).floatValue();
             int remain2 = ((BigDecimal)map.get("remain2")).intValue() / days;
             int remain3 = ((BigDecimal)map.get("remain3")).intValue() / days;
             int remain7 = ((BigDecimal)map.get("remain7")).intValue() / days;
             int remain30 = ((BigDecimal)map.get("remain30")).intValue() / days;
-            int payMoney = ((BigDecimal)map.get("payMoney")).intValue();
+            float payMoney = ((BigDecimal)map.get("payMoney")).floatValue();
 
             int payNum = ((BigDecimal)map.get("payNum")).intValue();
             //int payNum = getDaysPayNum(beginTime, endTime, appId, channelType);
