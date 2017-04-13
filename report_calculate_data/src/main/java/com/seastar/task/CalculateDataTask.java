@@ -92,7 +92,7 @@ public class CalculateDataTask
         long endTime = System.currentTimeMillis();
         System.out.println("totalTime: " + (endTime - startTime)/1000);
 
-        System.out.println("YestodayReport_OK");
+        System.out.println("Report_OK");
     }
 
     /**

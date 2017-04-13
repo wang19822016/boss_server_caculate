@@ -88,12 +88,12 @@ public class ReportDao
         Integer num;
         if (channelType == ChannelType.ALL)
         {
-            sql = "select count(userId) from "+ tableName +" where loginTime = ? and loginTime = regTime and onlineTime >= 10";
+            sql = "select count(userId) from "+ tableName +" where loginTime = ? and loginTime = regTime and onlineTime >= 5";
             num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         }
         else
         {
-            sql = "select count(userId) from "+ tableName +" where loginTime = ? and loginTime = regTime and channelType = ? and onlineTime >= 10";
+            sql = "select count(userId) from "+ tableName +" where loginTime = ? and loginTime = regTime and channelType = ? and onlineTime >= 5";
             num = jdbcTemplate.queryForObject(sql, Integer.class, dt, channelType);
         }
 
@@ -109,12 +109,12 @@ public class ReportDao
         Integer num;
         if (channelType == ChannelType.ALL)
         {
-            sql = "select count(userId) from "+tableName+" where loginTime = ?";
+            sql = "select count(distinct userId) from "+tableName+" where loginTime = ?";
             num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         }
         else
         {
-            sql = "select count(userId) from "+tableName+" where loginTime = ? and channelType = ?";
+            sql = "select count(distinct userId) from "+tableName+" where loginTime = ? and channelType = ?";
             num = jdbcTemplate.queryForObject(sql, Integer.class, dt, channelType);
         }
 
@@ -132,12 +132,12 @@ public class ReportDao
 
         if (channelType == ChannelType.ALL)
         {
-            sql = "select distinct count(userId) from "+tableName+" where loginTime between ? and ?";
+            sql = "select count(distinct userId) from "+tableName+" where loginTime between ? and ?";
             num = jdbcTemplate.queryForObject(sql, Integer.class, bt, et);
         }
         else
         {
-            sql = "select distinct count(userId) from "+tableName+" where loginTime between ? and ? and channelType = ?";
+            sql = "select count(distinct userId) from "+tableName+" where loginTime between ? and ? and channelType = ?";
             num = jdbcTemplate.queryForObject(sql, Integer.class, bt, et, channelType);
         }
 
@@ -240,12 +240,12 @@ public class ReportDao
 
         if (channelType == ChannelType.ALL)
         {
-            sql = "select distinct count(userId) from "+tableName+" where loginTime between ? and ? and payMoney > 0";
+            sql = "select count(distinct userId) from "+tableName+" where loginTime between ? and ? and payMoney > 0";
             num = jdbcTemplate.queryForObject(sql, Integer.class, bt, et);
         }
         else
         {
-            sql = "select distinct count(userId) from "+tableName+" where loginTime between ? and ? and channelType = ? and payMoney > 0";
+            sql = "select count(distinct userId) from "+tableName+" where loginTime between ? and ? and channelType = ? and payMoney > 0";
             num = jdbcTemplate.queryForObject(sql, Integer.class, bt, et, channelType);
         }
 
@@ -384,7 +384,7 @@ public class ReportDao
             //sql = "select count(userId) from "+tableName+" where userId = ? and loginTime = dateadd(day,?,regTime)";
             Integer num = jdbcTemplate.queryForObject(sql, Integer.class, userMap.get("userId"), days - 1);
 //            if (num > 0)
-            System.out.println("remainNum.... " + num);
+//            System.out.println("remainNum.... " + num);
             int numValue = num == null ? 0 : num.intValue();
 
             if (numValue > 0)
