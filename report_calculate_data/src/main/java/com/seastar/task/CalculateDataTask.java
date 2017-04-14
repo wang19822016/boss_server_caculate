@@ -61,16 +61,12 @@ public class CalculateDataTask
     //@Scheduled(fixedRate = 60000)       //60秒测试
     //@Scheduled(cron = "0 0 9 ? * *")
     @Scheduled(fixedDelay = 1000 * 60 * 5  , initialDelay = 5000)
-    public void UpdateYestodayReport()
+    public void UpdateReport()
     {
         List<String> appList = reportDao.getApps();
 
         long startTime = System.currentTimeMillis();
         System.out.println("start: " + startTime);
-
-//        long l = Long.parseLong("1491548288392");
-//        Date date = new Date(l);
-//        System.out.println(date.toString());
 
         System.out.println("aa: " + new Date().toString());
         for (int day = 0; day < 1; day++)
@@ -84,7 +80,7 @@ public class CalculateDataTask
                 UpdateUserData(dt, appId);          //用户综合数据
                 UpdateRemain(dt, appId);            //用户留存
                 UpdateChannelData(dt, appId);       //渠道数据
-
+                UpdateChannelIncome(appId);         //渠道总收入
                 System.out.println("oneDay: " + (System.currentTimeMillis() - startTime)/1000);
             }
         }
@@ -125,8 +121,8 @@ public class CalculateDataTask
                 continue;
 
             //以后留存率会有单独报表则按照days存储就可以了（如4日，5日留存等）
-//            if (days == 2 || days == 3 || days == 7 || days == 30)
-//            {
+            if (days == 2 || days == 3 || days == 7 || days == 30)
+            {
                 //当天新增用户的N天留存率
                 Date currentDay = new Date(time);
                 int raminRate = reportDao.getRemainRate(currentDay, days, appId, ChannelType.ALL);
@@ -134,7 +130,7 @@ public class CalculateDataTask
                 //0代表当天数据为null
                 if (raminRate > 0)
                     reportDao.updateRemainRate(currentDay, days, raminRate, appId);
-//            }
+            }
         }
     }
 
@@ -161,9 +157,9 @@ public class CalculateDataTask
         for (int i = 0; i < list.size(); i++)
         {
             String channelType = list.get(i);
-            if (channelType.isEmpty())
+            if (channelType == null || channelType.isEmpty())
             {
-                System.out.println("ChannelType Error!!!");
+                System.out.println("ChannelType Unknown!!!");
                 continue;
             }
 
@@ -182,6 +178,12 @@ public class CalculateDataTask
         long endTime = System.currentTimeMillis();
 
         System.out.println("dayTotalTime: " + (endTime - startTime)/1000);
+    }
+
+    //更新渠道累计收入
+    private void UpdateChannelIncome(String appId)
+    {
+        reportDao.UpdateChannelIncome(appId);
     }
 
     //@Scheduled(fixedDelay = 1000 * 60 * 50, initialDelay = 1)
