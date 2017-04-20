@@ -35,7 +35,7 @@ public class ReportDao
         return list;
     }
 
-    //安装数量（全渠道）
+    //安装数量
     public int getInstallNum(Date date, String appId, String channelType)
     {
         String tableName = getDeviceBaseTbName(appId);
@@ -88,12 +88,12 @@ public class ReportDao
         Integer num;
         if (channelType == ChannelType.ALL)
         {
-            sql = "select count(userId) from "+ tableName +" where loginTime = ? and loginTime = regTime and onlineTime >= 10";
+            sql = "select count(userId) from "+ tableName +" where loginTime = ? and loginTime = regTime and onlineTime >= 5";
             num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
         }
         else
         {
-            sql = "select count(userId) from "+ tableName +" where loginTime = ? and loginTime = regTime and channelType = ? and onlineTime >= 10";
+            sql = "select count(userId) from "+ tableName +" where loginTime = ? and loginTime = regTime and channelType = ? and onlineTime >= 5";
             num = jdbcTemplate.queryForObject(sql, Integer.class, dt, channelType);
         }
 
@@ -253,23 +253,23 @@ public class ReportDao
     }
 
     //日付费率
-    public int getPayRate(Date date, String appId,String channelType)
+    public float getPayRate(Date date, String appId,String channelType)
     {
         float payNum = (float)getPayNum(date, appId, channelType);
         float dau = (float)getDau(date, appId, channelType);
         if (dau <= 0)
             return 0;
-        return (int)((payNum / dau) * 100);
+        return payNum / dau;
     }
 
     //N日付费率
-    public int getDaysPayRate(Date begin, Date end, String appId, String channelType)
+    public float getDaysPayRate(Date begin, Date end, String appId, String channelType)
     {
         float payNum = (float)getDaysPayNum(begin, end, appId, channelType);
         float nau = (float)getNau(begin, end, appId, channelType);
         if (nau <= 0)
             return 0;
-        return (int)((payNum / nau) * 100);
+        return payNum / nau;
     }
 
     //新用户每日付费金额
@@ -294,62 +294,95 @@ public class ReportDao
     }
 
     //新用户日付费率
-    public int getNewUserPayRate(Date date, String appId)
+    public float getNewUserPayRate(Date date, String appId)
     {
         float payNum = (float)getNewUserPayNum(date, appId);
         float dnu = (float)getDnu(date, appId);
         if (dnu <= 0)
             return 0;
-        return (int)(payNum / dnu * 100);
+        return payNum / dnu;
     }
 
-    //累计收入
-    public float getGrossIncome(String appId, String date, String channelType)
+    //注册用户总付费金额
+    public float getRegUserTotalPayMoney(String appId, String regDate, String channelType)
     {
         String tableName = getUserPayTbName(appId);
+        String sql;
+        Integer money;
 
-        String sql = "select sum(payMoney) from "+tableName+" where regDate = ? and channelType = ?";
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, date, channelType);
+        if (channelType == ChannelType.ALL)
+        {
+            sql = "select sum(payMoney) from "+tableName+" where regDate = ?";
+            money = jdbcTemplate.queryForObject(sql, Integer.class, regDate, channelType);
+        }
+        else
+        {
+            sql = "select sum(payMoney) from "+tableName+" where regDate = ? and channelType = ?";
+            money = jdbcTemplate.queryForObject(sql, Integer.class, regDate, channelType);
+        }
 
-        return num == null ? 0 : num.floatValue();
+
+        return money == null ? 0 : money.floatValue();
+    }
+
+    //注册用户总付费人数
+    public int getRegUserTotalPayNum(String appId, Date regDate, String channelType)
+    {
+        String payTbName = getUserPayTbName(appId);
+        String dt = sdf.format(regDate);
+        String sql;
+        Integer payNumInteger;
+
+        if (channelType == ChannelType.ALL)
+        {
+            sql = "select count(distinct userId) from " + payTbName + " where regDate = ?";
+            payNumInteger = jdbcTemplate.queryForObject(sql, Integer.class, dt);
+        }
+        else
+        {
+            sql = "select count(distinct userId) from " + payTbName + " where regDate = ? and channelType = ?";
+            payNumInteger = jdbcTemplate.queryForObject(sql, Integer.class, dt, channelType);
+        }
+
+        int payNum = payNumInteger == null ? 0 : payNumInteger.intValue();
+
+        return payNum;
     }
 
     //活跃用户平均付费金额(百位制,客户端需除以100）
-    public int getArpu(Date date, String appId, String channelType)
+    public float getArpu(Date date, String appId, String channelType)
     {
         float payMoney = getPayMoney(date, appId, channelType);
         float dau = (float)getDau(date, appId, channelType);
 
         if (dau <= 0)
             return 0;
-        int arpu = (int)(payMoney / dau * 100) ;
-        return arpu;
+
+        return payMoney / dau;
     }
 
     //N日活跃用户平均付费金额
-    public int getDaysArpu(Date begin, Date end, String appId, String channelType)
+    public float getDaysArpu(Date begin, Date end, String appId, String channelType)
     {
         float payMoney = getDaysPayMoney(begin, end, appId, channelType);
         float nau = (float)getNau(begin, end, appId, channelType);
         if (nau <= 0)
             return 0;
-        int arpu = (int)(payMoney / nau * 100) ;
-        return arpu;
+        return payMoney / nau;
     }
 
     //付费用户平均付费金额(百位制,客户端需除以100）
-    public int getArppu(Date date, String appId, String channelType)
+    public float getArppu(Date date, String appId, String channelType)
     {
         float payMoney = getPayMoney(date, appId, channelType);
         float payNum = (float)getPayNum(date, appId, channelType);
         if (payNum <= 0)
             return 0;
-        int arppu = (int)(payMoney / payNum * 100) ;
-        return arppu;
+        return payMoney / payNum;
     }
 
     //N日付费用户平均付费金额(百位制,客户端需除以100）
-    public int getDaysArppu(Date begin, Date end, String appId, String channelType)
+    public float getDaysArppu(Date begin, Date end, String appId, String channelType)
     {
         float payMoney = getDaysPayMoney(begin, end, appId, channelType);
         float payNum = (float)getDaysPayNum(begin, end, appId, channelType);
@@ -357,13 +390,11 @@ public class ReportDao
         if (payNum <= 0)
             return 0;
 
-        int arppu = (int)(payMoney / payNum * 100) ;
-
-        return arppu;
+        return payMoney / payNum;
     }
 
     //留存率(-1代表暂无数据)
-    public int getRemainRate(Date date, int days, String appId, String channelType)
+    public float getRemainRate(Date date, int days, String appId, String channelType)
     {
         String tableName = getUserLoginTbName(appId);
         String dt = sdf.format(date);
@@ -389,53 +420,56 @@ public class ReportDao
         }
 
         if (userInteger == null || userInteger.intValue() <= 0)
-            return -1;
+            return 0;
 
         float userNum = userInteger == null ? 0 : userInteger.floatValue();
         float remainNum = remainInteger == null ? 0 : remainInteger.floatValue();
 
-        if (userNum <= 0)
+        return remainNum / userNum;
+    }
+
+
+    private long dayTime = (1000 * 3600 * 24);
+
+    //LTV
+    public float getLTV(Date date, int days, String appId, String channelType)
+    {
+        String payTbName = getUserPayTbName(appId);
+        String deviceTbName = getDeviceBaseTbName(appId);
+        String dt = sdf.format(date);
+        String sql;
+        Integer payInteger = null;
+        Integer deviceInteger = null;
+
+        Date endDate = new Date(date.getTime() + days * dayTime);
+        String endDt = sdf.format(endDate);
+
+        if (channelType == ChannelType.ALL)
+        {
+            sql = "select sum(payMoney) from " + payTbName + " where regDate = ? and serverDate <= ?";
+            payInteger = jdbcTemplate.queryForObject(sql, Integer.class, dt, endDate);
+
+            sql = "select count(deviceId) from " + deviceTbName + " where serverDate = ?";
+            deviceInteger = jdbcTemplate.queryForObject(sql, Integer.class, dt);
+        }
+        else
+        {
+            sql = "select sum(payMoney) from " + payTbName + " where regDate = ? and serverDate <= ? and channelType = ?";
+            payInteger = jdbcTemplate.queryForObject(sql, Integer.class, dt, endDate, channelType);
+
+            sql = "select count(deviceId) from " + deviceTbName + " where serverDate = ? and channelType = ?)";
+            deviceInteger = jdbcTemplate.queryForObject(sql, Integer.class, dt, channelType);
+        }
+
+        if (deviceInteger == null || deviceInteger.intValue() <= 0)
             return -1;
 
-        return (int)(remainNum / userNum * 100);
-//        String tableName = getDailyDataTbName(appId);
-//        String dt = sdf.format(date);
-//        String sql;
-//        List newUsers;
-//
-//        if (channelType == ChannelType.ALL)
-//        {
-//            sql = "select userId from " + tableName + " where loginTime = ? and loginTime = regTime";
-//            newUsers = jdbcTemplate.queryForList(sql, dt);
-//        }
-//        else
-//        {
-//            sql = "select userId from " + tableName + " where loginTime = ? and loginTime = regTime and channelType = ?";
-//            newUsers = jdbcTemplate.queryForList(sql, dt, channelType);
-//        }
-//
-//        if (newUsers.size() <= 0)
-//            return  - 1;
-//
-//        Iterator it = newUsers.iterator();
-//        int remainNum = 0;
-//
-//        while(it.hasNext())
-//        {
-//            Map userMap = (Map) it.next();
-//            //sql = "select count(userId) from "+tableName+" where userId = ? and DATEDIFF(loginTime,regTime) = ?";
-//            sql = "select count(userId) from "+tableName+" where userId = ? and loginTime = (regTime + ?)";
-//            //sql = "select count(userId) from "+tableName+" where userId = ? and loginTime = dateadd(day,?,regTime)";
-//            Integer num = jdbcTemplate.queryForObject(sql, Integer.class, userMap.get("userId"), days - 1);
-////            if (num > 0)
-////            System.out.println("remainNum.... " + num);
-//            int numValue = num == null ? 0 : num.intValue();
-//
-//            if (numValue > 0)
-//                remainNum++;
-//        }
-//
-//        return (int)((float) remainNum / (float)newUsers.size() * 100);
+        float payMoney = payInteger == null ? 0 : payInteger.floatValue();
+        float deviceNum = deviceInteger == null ? 0 : deviceInteger.floatValue();
+
+        System.out.println("payMoney: " + payMoney + "deviceNum: " + deviceNum);
+
+        return  payMoney / deviceNum;
     }
 
     //平均在线人数
@@ -449,7 +483,7 @@ public class ReportDao
     }
 
     //平均在线时长
-    public int getAvgOnlineTime(Date date, String appId)
+    public float getAvgOnlineTime(Date date, String appId)
     {
         String tableName = getDailyDataTbName(appId);
         String dt = sdf.format(date);
@@ -459,8 +493,8 @@ public class ReportDao
         sql = "select count(userId) from "+tableName+" where loginTime = ?";
         Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt);
 
-        int timeValue = time == null ? 0 : time.intValue();
-        int numValue =  num == null ? 0 : num.intValue();
+        float timeValue = time == null ? 0 : time.floatValue();
+        float numValue =  num == null ? 0 : num.floatValue();
         if (numValue <= 0)
             return 0;
         return  timeValue / numValue;   //numvalue 不应该为0
@@ -484,10 +518,6 @@ public class ReportDao
         userReportModel.setNewUserPayRate(getNewUserPayRate(date, appId));
         userReportModel.setArpu(getArpu(date, appId, ChannelType.ALL));
         userReportModel.setArppu(getArppu(date, appId, ChannelType.ALL));
-//        userReportModel.setRemain2(getRemainRate(date, 2, appId));
-//        userReportModel.setRemain3(getRemainRate(date, 3, appId));
-//        userReportModel.setRemain7(getRemainRate(date, 7, appId));
-//        userReportModel.setRemain30(getRemainRate(date, 30, appId));
         userReportModel.setAvgOnlineNum(getAvgOnlineNum(date, appId));
         userReportModel.setAvgOnlineTime(getAvgOnlineTime(date, appId));
         return userReportModel;
@@ -534,23 +564,122 @@ public class ReportDao
                 );
     }
 
-    //更新N天留存率
-    public void updateRemainRate(Date date, int days, int remainRate, String appId)
+    //更新用户报表N天留存率
+    public void updateUserReportRemainRate(Date date, int days, float remainRate, String appId)
     {
         String tableName = getUserReportTbName(appId);
         String dt = sdf.format(date);
         try
         {
-           int line = jdbcTemplate.update("UPDATE "+tableName+" set remain" + days + " = ? WHERE date = ?" ,
-                    remainRate,
-                    dt);
-           //System.out.println("remain_update_line: " + line);
+           int line = jdbcTemplate.update("UPDATE "+tableName+" set remain" + days + " = ? WHERE date = ?" ,remainRate, dt);
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
+    }
 
+    //更新N天留存率
+    public void updateRemainRate(Date date, int days, float remainRate, String appId)
+    {
+        try
+        {
+            String tableName = getRemainTbName(appId);
+            String dt = sdf.format(date);
+
+            String sql = "select count(id) from "+tableName+" where date = ? and remainDays = ?";
+            Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt, days);
+
+            int numValue = num == null ? 0 : num.intValue();
+
+            if (numValue > 0)
+                jdbcTemplate.update("UPDATE "+tableName+" set remainValue = ? WHERE date = ? and remainDays = ?", remainRate, dt, days);
+            else
+                jdbcTemplate.update("INSERT INTO "+tableName+"(date, remainDays, remainValue) VALUES (?,?,?)", dt, days, remainRate);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    //更新N天LTV
+    public void updateLTV(Date date, int days, float ltv, String appId)
+    {
+        try
+        {
+            String tableName = getLtvTbName(appId);
+            String dt = sdf.format(date);
+
+            String sql = "select count(id) from "+tableName+" where date = ? and ltvDays = ?";
+            Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt, days);
+
+            int numValue = num == null ? 0 : num.intValue();
+
+            if (numValue > 0)
+                jdbcTemplate.update("UPDATE "+tableName+" set ltvValue = ? WHERE date = ? and ltvDays = ?", ltv, dt, days);
+            else
+                jdbcTemplate.update("INSERT INTO "+tableName+"(date, ltvDays, ltvValue) VALUES (?,?,?)", dt, days, ltv);
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+
+    //更新N天ROI
+    public void updateROI(Date date, int days, float grossIncome, float cost, String appId)
+    {
+        try
+        {
+            float roi = cost <= 0 ? 0 : grossIncome / cost;
+
+            String tableName = getRoiTbName(appId);
+            String dt = sdf.format(date);
+
+            String sql = "select count(id) from "+tableName+" where date = ? and roiDays = ?";
+            Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt, days);
+
+            int numValue = num == null ? 0 : num.intValue();
+
+            if (numValue > 0)
+                jdbcTemplate.update("UPDATE "+tableName+" set grossIncome = ?, cost = ?, roiValue = ? WHERE date = ? and roiDays = ?", grossIncome, cost, roi, dt, days);
+            else
+                jdbcTemplate.update("INSERT INTO "+tableName+"(date, roiDays, grossIncome, cost, roiValue) VALUES (?,?,?,?,?)", dt, days, grossIncome, cost, roi);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    //更新N天ROI
+    public void updatePayConversion(Date date, int days, int dnu, int payNum, int payTimes, String appId)
+    {
+        try
+        {
+            float payRate = dnu <= 0 ? 0 : (float)payNum / (float)dnu;
+
+            String tableName = getPayConversionTbName(appId);
+            String dt = sdf.format(date);
+
+            String sql = "select count(id) from "+tableName+" where date = ? and payDays = ?";
+            Integer num = jdbcTemplate.queryForObject(sql, Integer.class, dt, days);
+
+            int numValue = num == null ? 0 : num.intValue();
+
+            if (numValue > 0)
+                jdbcTemplate.update("UPDATE "+tableName+" set dnu = ?, payNum = ?, payTimes = ?, payRate = ? WHERE date = ? and payDays = ?", dnu, payNum, payTimes, payRate, dt, days);
+            else
+                jdbcTemplate.update("INSERT INTO "+tableName+"(date, payDays, dnu, payNum, payTimes, payRate) VALUES (?,?,?,?,?,?)", dt, days, dnu, payNum, payTimes, payRate);
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     //更新日报数据
@@ -595,39 +724,8 @@ public class ReportDao
         return list;
     }
 
-    //根据日期渠道 创建一条渠道数据
-    public ChannelReportModel createChannelReportModelByChannel(Date date, String appId, String channelType)
-    {
-        ChannelReportModel crm = new ChannelReportModel();
-        crm.setDate(date);
-        crm.setChannelType(channelType);
-        //crm.setShowNum();
-        //crm.setClickNum();
-        crm.setCpc(getCpc(date, appId, channelType));
-        crm.setCpm(getCpm(date, appId, channelType));
-        crm.setInstallNum(getInstallNum(date, appId, channelType));
-        crm.setCpi(getCpi(date, appId, channelType));
-        crm.setValidNum(getValidNum(date, appId, channelType));
-        crm.setClickRate(getClickRate(date, appId, channelType));
-        crm.setInstallRate(getInstallRate(date, appId, channelType));
-        crm.setRegRate(getRegRate(date, appId, channelType));
-        crm.setValidRate(getValidRate(date, appId, channelType));
-        crm.setRoi(getRoi(date, appId, channelType));
-        //crm.setCostMoney(getCostMoney(date, appId, channelType));
-        crm.setRemain2(getRemainRate(date, 2, appId, channelType));
-        crm.setRemain7(getRemainRate(date, 7, appId, channelType));
-        crm.setRemain30(getRemainRate(date, 30, appId, channelType));
-        crm.setPayMoney(getPayMoney(date, appId, channelType));
-        crm.setPayNum(getPayNum(date, appId, channelType));
-        crm.setPayRate(getPayRate(date, appId, channelType));
-        crm.setArpu(getArpu(date, appId, channelType));
-        crm.setArppu(getArppu(date, appId, channelType));
-
-        return crm;
-    }
-
     //是否存在某天的渠道数据
-    public boolean isHaveChannelReportData(String appId, Date date, String channelType)
+    public boolean isHaveChannelData(String appId, Date date, String channelType)
     {
         String tableName = getChannelReportTbName(appId);
         String dt = sdf.format(date);
@@ -643,78 +741,111 @@ public class ReportDao
             return false;
     }
 
+    //根据日期渠道 创建一条渠道数据
+    public ChannelReportModel createChannelBaseData(Date date, String appId, String channelType)
+    {
+        ChannelReportModel crm = new ChannelReportModel();
+        crm.setDate(date);
+        crm.setChannelType(channelType);
+        //crm.setShowNum();
+        //crm.setClickNum();
+        //crm.setCpc(getCpc(date, appId, channelType));
+        //crm.setCpm(getCpm(date, appId, channelType));
+        crm.setInstallNum(getInstallNum(date, appId, channelType));
+        //crm.setCpi(getCpi(date, appId, channelType));
+        crm.setValidNum(getValidNum(date, appId, channelType));
+        crm.setClickRate(getClickRate(date, appId, channelType));
+        crm.setInstallRate(getInstallRate(date, appId, channelType));
+        crm.setRegRate(getRegRate(date, appId, channelType));
+        crm.setValidRate(getValidRate(date, appId, channelType));
+        //crm.setRoi(getRoi(date, appId, channelType));
+        //crm.setCostMoney(getCostMoney(date, appId, channelType));
+        //crm.setPayMoney(getPayMoney(date, appId, channelType));
+        //crm.setPayNum(getPayNum(date, appId, channelType));
+        //crm.setPayRate(getPayRate(date, appId, channelType));
+        //crm.setArpu(getArpu(date, appId, channelType));
+        //crm.setArppu(getArppu(date, appId, channelType));
+
+        return crm;
+    }
+
     //存储渠道数据
-    public void saveChannelReportData(ChannelReportModel crm, String appId)
+    public void saveChannelBaseData(ChannelReportModel crm, String appId)
     {
         String tableName = getChannelReportTbName(appId);
 
-        jdbcTemplate.update("INSERT INTO "+tableName+"(date, channelType, cpc, cpm, installNum, cpi, validNum, clickRate, installRate,regRate, validRate, " +
-                        "roi, remain2, remain3, remain7, remain30,payMoney,payNum,payRate,arpu,arppu) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        jdbcTemplate.update("INSERT INTO "+tableName+"(date, channelType, installNum, validNum, clickRate, installRate," +
+                        "regRate, validRate) VALUES (?,?,?,?,?,?,?,?)",
                 crm.getDate(),
                 crm.getChannelType(),
-                crm.getCpc(),
-                crm.getCpm(),
                 crm.getInstallNum(),
-                crm.getCpi(),
                 crm.getValidNum(),
                 crm.getClickRate(),
                 crm.getInstallRate(),
                 crm.getRegRate(),
-                crm.getValidRate(),
-                crm.getRoi(),
-                crm.getRemain2(),
-                crm.getRemain3(),
-                crm.getRemain7(),
-                crm.getRemain30(),
-                crm.getPayMoney(),
-                crm.getPayNum(),
-                crm.getPayRate(),
-                crm.getArpu(),
-                crm.getArppu()
+                crm.getValidRate()
         );
     }
 
     //更新渠道数据
-    public void updateChannelReportData(ChannelReportModel crm, String appId)
+    public void updateChannelBaseData(ChannelReportModel crm, String appId)
     {
         String tableName = getChannelReportTbName(appId);
         String dt = sdf.format(crm.getDate());
-        jdbcTemplate.update("UPDATE "+tableName+" SET showNum = ?, clickNum = ?, cpc = ?, cpm = ?, installNum = ?, cpi = ?, validNum = ?, " +
-                        "clickRate = ?, installRate = ?, regRate = ?, validRate = ?, roi = ?, costMoney = ?, remain2 = ?, " +
-                        "remain3 = ?, remain7 = ?, remain30 = ?, payMoney = ?,payNum = ?,payRate = ?, arpu = ?,arppu = ? " +
-                        "WHERE date = ? and channelType = ?" ,
-                crm.getShowNum(),
-                crm.getClickNum(),
-                crm.getCpc(),
-                crm.getCpm(),
+        jdbcTemplate.update("UPDATE "+tableName+" SET installNum = ?, validNum = ?, clickRate = ?, installRate = ?, regRate = ?, " +
+                        "validRate = ? WHERE date = ? and channelType = ?" ,
+
                 crm.getInstallNum(),
-                crm.getCpi(),
                 crm.getValidNum(),
                 crm.getClickRate(),
                 crm.getInstallRate(),
                 crm.getRegRate(),
                 crm.getValidRate(),
-                crm.getRoi(),
-                crm.getCostMoney(),
-                crm.getRemain2(),
-                crm.getRemain3(),
-                crm.getRemain7(),
-                crm.getRemain30(),
-                crm.getPayMoney(),
-                crm.getPayNum(),
-                crm.getPayRate(),
-                crm.getArpu(),
-                crm.getArppu(),
                 dt,
                 crm.getChannelType());
     }
 
-    //更新渠道累计收入
-    public void UpdateChannelIncome(String appId)
+    //更新某天的所有渠道留存
+    public void UpdateAllChannelRemain(String appId, Date date, int days)
+    {
+        List<String> list = getChannelListByDate(date, appId);
+
+        for (int i = 0; i < list.size(); i++)
+        {
+            String channelType = list.get(i);
+
+            if (channelType == null || channelType.isEmpty())
+            {
+                System.out.println("Remain ChannelType Unknown!!!");
+                continue;
+            }
+
+            boolean isHave = isHaveChannelData(appId, date, channelType);
+
+            if (isHave)
+            {
+                String tableName = getChannelReportTbName(appId);
+                String dt = sdf.format(date);
+                try
+                {
+                    float remainRate = getRemainRate(date, days, appId, channelType);
+                    jdbcTemplate.update("UPDATE "+tableName+" set remain" + days + " = ? WHERE date = ? and channelType = ?" ,remainRate, dt, channelType);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+    //更新渠道持续计算的数据
+    public void UpdateChannelLastData(String appId)
     {
         String channelTbName = getChannelReportTbName(appId);
 
-        String sql = "select date, channelType from " + channelTbName + " order by date,channelType";
+        String sql = "select date, channelType, showNum, clickNum, costMoney from " + channelTbName + " order by date,channelType";
 
         List channelData = jdbcTemplate.queryForList(sql);
 
@@ -723,39 +854,71 @@ public class ReportDao
         while(it.hasNext())
         {
             Map map = (Map) it.next();
+
             Date date = (Date) map.get("date");
             String dt = sdf.format(date);
+
             String channelType = (String) map.get("channelType");
+            int showNum = (int)map.get("showNum");
+            int clickNum = (int)map.get("clickNum");
+            float costMoney = (float)map.get("costMoney");
+
             if (channelType == null || channelType.isEmpty())
             {
-                System.out.println("ChannelType GrossIncome Unknown!!!");
+                System.out.println("Cumulative ChannelType Unknown!!!");
                 continue;
             }
-            float payMoney = getGrossIncome(appId, dt, channelType);
-            System.out.println("grossIncome: " +date+" "+channelType+" "+payMoney);
-            jdbcTemplate.update("UPDATE "+channelTbName+" set grossIncome = ? WHERE date = ? and " +
-                    "channelType = ?",payMoney, dt, channelType);
+
+            int installNum = getInstallNum(date, appId, channelType);
+            float payMoney = getRegUserTotalPayMoney(appId, dt, channelType);
+            int payNum = getRegUserTotalPayNum(appId, date, channelType);
+            float payRate = installNum <= 0 ? 0 : (float)payNum / (float)installNum;
+            float arpu = installNum <= 0 ? 0 : payMoney / (float)installNum;
+            float arppu = payNum <= 0 ? 0 : payMoney / (float)payNum;
+
+            float cpi = installNum <= 0 ? 0 : costMoney / (float)installNum;
+            float cpc = clickNum <= 0 ? 0 : costMoney / (float)clickNum;
+            float cpm = showNum <= 0 ? 0 : costMoney / (float)showNum * 1000;
+            float roi = costMoney <= 0 ? 0 : payMoney / costMoney;
+
+            System.out.println("Channel grossIncome: " +date+" "+channelType+" "+payMoney);
+
+            try
+            {
+                jdbcTemplate.update("UPDATE "+channelTbName+" set cpi = ?, cpc = ?, cpm = ?, roi = ?, payMoney = ?, payNum = ?," +
+                        "payRate = ?, arpu = ?, arppu = ? WHERE date = ? and channelType = ?", cpi, cpc, cpm, roi, payMoney, payNum,
+                        payRate, arpu, arppu, dt, channelType);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
         }
     }
+
     //注册率
-    public int getRegRate(Date date, String appId, String channelType)
+    public float getRegRate(Date date, String appId, String channelType)
     {
         int regNum = getRegNum(date, appId, channelType);
         int installNum = getInstallNum(date, appId, channelType);
-
-        return (int)((float) regNum / (float)installNum * 100);
+        if (installNum <= 0)
+            return 0;
+        return (float) regNum / (float)installNum;
     }
 
     //有效转化率
-    public int getValidRate(Date date, String appId, String channelType)
+    public float getValidRate(Date date, String appId, String channelType)
     {
         int validNum = getValidNum(date, appId, channelType);
         int installNum = getInstallNum(date, appId, channelType);
-        return (int)((float) validNum / (float)installNum * 100);
+        if (installNum <= 0)
+            return 0;
+        return (float) validNum / (float)installNum;
     }
 
     //单用户安装成本
-    public int getCpi(Date date, String appId, String channelType)
+    public float getCpi(Date date, String appId, String channelType)
     {
         String tableName = getChannelReportTbName(appId);
         String dt = sdf.format(date);
@@ -766,33 +929,33 @@ public class ReportDao
         if (installNum <= 0)
             return -1;
 
-        return (int)( money / (float)installNum * 100);
+        return money / (float)installNum;
     }
 
     //点击率
-    public int getClickRate(Date date, String appId, String channelType)
+    public float getClickRate(Date date, String appId, String channelType)
     {
         String tableName = getChannelReportTbName(appId);
         int showNum = getShowNum(date, appId, channelType);
         int clickNum = getClickNum(date, appId, channelType);
 
         if (showNum <= 0)
-            return -1;
+            return 0;
 
-        return (int)((float) clickNum / (float)showNum * 100);
+        return (float) clickNum / (float)showNum;
     }
 
     //安装率
-    public int getInstallRate(Date date, String appId, String channelType)
+    public float getInstallRate(Date date, String appId, String channelType)
     {
         String tableName = getChannelReportTbName(appId);
         int clickNum = getClickNum(date, appId, channelType);
         int installNum = getInstallNum(date, appId, channelType);
 
         if (clickNum <= 0)
-            return -1;
+            return 0;
 
-        return (int)((float) installNum / (float)clickNum * 100);
+        return (float) installNum / (float)clickNum;
     }
 
     //花费
@@ -818,7 +981,7 @@ public class ReportDao
     }
 
     //回报率
-    public int getRoi(Date date, String appId, String channelType)
+    public float getRoi(Date date, String appId, String channelType)
     {
         float payMoney = getPayMoney(date, appId, channelType);
         float costMoney = getCostMoney(date, appId, channelType);
@@ -826,7 +989,91 @@ public class ReportDao
         if (costMoney <= 0)
             return -1;
 
-        return (int)( payMoney / costMoney * 100);
+        return payMoney / costMoney;
+    }
+
+    //N天内的收益 - ROI
+    public float getGrossIncome(Date date, int days, String appId, String channelType)
+    {
+        String payTbName = getUserPayTbName(appId);
+
+        String dt = sdf.format(date);
+        String sql;
+        Integer payInteger = null;
+
+        Date endDate = new Date(date.getTime() + days * dayTime);
+        String endDt = sdf.format(endDate);
+
+        if (channelType == ChannelType.ALL)
+        {
+            sql = "select sum(payMoney) from " + payTbName + " where regDate = ? and serverDate <= ?";
+            payInteger = jdbcTemplate.queryForObject(sql, Integer.class, dt, endDate);
+        }
+        else
+        {
+            sql = "select sum(payMoney) from " + payTbName + " where regDate = ? and serverDate <= ? and channelType = ?";
+            payInteger = jdbcTemplate.queryForObject(sql, Integer.class, dt, endDate, channelType);
+        }
+
+        float payMoney = payInteger == null ? 0 : payInteger.floatValue();
+
+        return  payMoney;
+    }
+
+    //付费转化-当天新增活跃用户的N天付费人数
+    public int getDnuPayNumByDays(Date date, int days, String appId, String channelType)
+    {
+        String payTbName = getUserPayTbName(appId);
+
+        String dt = sdf.format(date);
+        String sql;
+        Integer payNumInteger = null;
+
+        Date endDate = new Date(date.getTime() + days * dayTime);
+        String endDt = sdf.format(endDate);
+
+        if (channelType == ChannelType.ALL)
+        {
+            sql = "select count(distinct userId) from " + payTbName + " where regDate = ? and serverDate <= ?";
+            payNumInteger = jdbcTemplate.queryForObject(sql, Integer.class, dt, endDate);
+        }
+        else
+        {
+            sql = "select count(distinct userId) from " + payTbName + " where regDate = ? and serverDate <= ? and channelType = ?";
+            payNumInteger = jdbcTemplate.queryForObject(sql, Integer.class, dt, endDate, channelType);
+        }
+
+        int payNum = payNumInteger == null ? 0 : payNumInteger.intValue();
+
+        return payNum;
+    }
+
+    //付费转化-当天新增活跃用户的N天付费人次
+    public int getDnuPayTimesByDays(Date date, int days, String appId, String channelType)
+    {
+        String payTbName = getUserPayTbName(appId);
+
+        String dt = sdf.format(date);
+        String sql;
+        Integer payTimesInteger = null;
+
+        Date endDate = new Date(date.getTime() + days * dayTime);
+        String endDt = sdf.format(endDate);
+
+        if (channelType == ChannelType.ALL)
+        {
+            sql = "select count(userId) from " + payTbName + " where regDate = ? and serverDate <= ?";
+            payTimesInteger = jdbcTemplate.queryForObject(sql, Integer.class, dt, endDate);
+        }
+        else
+        {
+            sql = "select count(userId) from " + payTbName + " where regDate = ? and serverDate <= ? and channelType = ?";
+            payTimesInteger = jdbcTemplate.queryForObject(sql, Integer.class, dt, endDate, channelType);
+        }
+
+        int payTimes = payTimesInteger == null ? 0 : payTimesInteger.intValue();
+
+        return payTimes;
     }
 
     //展示数
@@ -874,19 +1121,19 @@ public class ReportDao
     }
 
     //按点击价格购买
-    public int getCpc(Date date, String appId, String channelType)
+    public float getCpc(Date date, String appId, String channelType)
     {
         float costMoney = getCostMoney(date, appId, channelType);
         int clickNum = getClickNum(date, appId, channelType);
-        return (int)(costMoney / (float)clickNum * 100);
+        return costMoney / (float)clickNum;
     }
 
     //按展示1000次购买
-    public int getCpm(Date date, String appId, String channelType)
+    public float getCpm(Date date, String appId, String channelType)
     {
         float costMoney = getCostMoney(date, appId, channelType);
         int showNum = getShowNum(date, appId, channelType);
-        return (int)(costMoney / (float)showNum * 1000 * 100);
+        return costMoney / (float)showNum * 1000;
     }
 
 
@@ -940,249 +1187,6 @@ public class ReportDao
         return crmList;
     }
 
-    //按累计查询
-    public List<ChannelReportModel> getChannelReportListByRange(String appId, Date beginTime, Date endTime)
-    {
-        String tableName = getChannelReportTbName(appId);
-        String bt = sdf.format(beginTime);
-        String et = sdf.format(endTime);
-
-        String sql = "select channelType, sum(showNum) as showNum, sum(clickNum) as clickNum, sum(cpc) as cpc, sum(cpm) as cpm," +
-                "sum(installNum) as installNum, sum(cpi) as cpi, sum(validNum) as validNum, sum(clickRate) as clickRate," +
-                "sum(installRate) as installRate, sum(regRate) as regRate, sum(validRate) as validRate, sum(roi) as roi, " +
-                "sum(costMoney) as costMoney, sum(remain2) as remain2, sum(remain3) as remain3, sum(remain7) as remain7, " +
-                "sum(remain30) as remain30, sum(payMoney) as payMoney, sum(payNum) as payNum, sum(payRate) as payRate, " +
-                "sum(arpu) as arpu, sum(arppu) as arppu from " + tableName + " where date between ? and ? group by channelType order by channelType";
-
-        List list = jdbcTemplate.queryForList(sql, bt, et);
-        Iterator it = list.iterator();
-
-        List<ChannelReportModel> crmList = new ArrayList<ChannelReportModel>();
-
-        while(it.hasNext())
-        {
-            Map<String, Object> map = (Map) it.next();
-            ChannelReportModel crm = new ChannelReportModel();
-
-            int days = (int)((endTime.getTime() - beginTime.getTime()) / (1000*3600*24)) + 1;
-            String channelType = (String)map.get("channelType");
-            int showNum = ((BigDecimal)map.get("showNum")).intValue();
-            int clickNum = ((BigDecimal)map.get("clickNum")).intValue();
-            int cpc = ((BigDecimal)map.get("cpc")).intValue() / days;
-            int cpm = ((BigDecimal)map.get("cpm")).intValue() / days;
-            int installNum = ((BigDecimal)map.get("installNum")).intValue();
-            int cpi = ((BigDecimal)map.get("cpi")).intValue() / days;
-            int validNum = ((BigDecimal)map.get("validNum")).intValue();
-            int clickRate = ((BigDecimal)map.get("clickRate")).intValue() / days;
-            int installRate = ((BigDecimal)map.get("installRate")).intValue() / days;
-            int regRate = ((BigDecimal)map.get("regRate")).intValue() / days;
-            int validRate = ((BigDecimal)map.get("validRate")).intValue() / days;
-            int roi = ((BigDecimal)map.get("roi")).intValue();
-            float costMoney = ((BigDecimal)map.get("costMoney")).floatValue();
-            int remain2 = ((BigDecimal)map.get("remain2")).intValue() / days;
-            int remain3 = ((BigDecimal)map.get("remain3")).intValue() / days;
-            int remain7 = ((BigDecimal)map.get("remain7")).intValue() / days;
-            int remain30 = ((BigDecimal)map.get("remain30")).intValue() / days;
-            float payMoney = ((BigDecimal)map.get("payMoney")).floatValue();
-
-            int payNum = ((BigDecimal)map.get("payNum")).intValue();
-            //int payNum = getDaysPayNum(beginTime, endTime, appId, channelType);
-            int payRate = ((BigDecimal)map.get("payRate")).intValue() / days;
-            //int payRate = getDaysPayRate(beginTime, endTime, appId, channelType);
-            int arpu = ((BigDecimal)map.get("arpu")).intValue() / days;
-            //int arpu = getDaysArpu(beginTime, endTime, appId, channelType);
-            int arppu = ((BigDecimal)map.get("arppu")).intValue() / days;
-            //int arppu = getDaysArppu(beginTime, endTime, appId, channelType);
-
-            crm.setChannelType(channelType);
-            crm.setShowNum(showNum);
-            crm.setClickNum(clickNum);
-            crm.setCpc(cpc);
-            crm.setCpm(cpm);
-            crm.setInstallNum(installNum);
-            crm.setCpi(cpi);
-            crm.setValidNum(validNum);
-            crm.setClickRate(clickRate);
-            crm.setInstallRate(installRate);
-            crm.setRegRate(regRate);
-            crm.setValidRate(validRate);
-            crm.setRoi(roi);
-            crm.setCostMoney(costMoney);
-            crm.setRemain2(remain2);
-            crm.setRemain3(remain3);
-            crm.setRemain7(remain7);
-            crm.setRemain30(remain30);
-            crm.setPayMoney(payMoney);
-            crm.setPayNum(payNum);
-            crm.setPayRate(payRate);
-            crm.setArpu(arpu);
-            crm.setArppu(arppu);
-
-            crmList.add(crm);
-        }
-
-        return crmList;
-    }
-
-    //添加广告数据(手动)
-    public void addAdDetails(String appId, Date date, String channelType, int showNum, int clickNum, int costMoney)
-    {
-        String tableName = getChannelReportTbName(appId);
-
-        jdbcTemplate.update("INSERT  INTO " + tableName + "(date, showNum, clickNum, costMoney) VALUES (?,?,?,?)",
-                date, channelType, showNum, clickNum, costMoney);
-    }
-
-    //更新广告数据
-    public void updateAdDetails(String appId, Date date, String channelType, int showNum, int clickNum, int costMoney)
-    {
-        String tableName = getChannelReportTbName(appId);
-        String dt = sdf.format(date);
-
-        jdbcTemplate.update("UPDATE "+tableName+" set showNum = ?, clickNum = ?, costMoney = ? WHERE date = ? and " +
-                        "channelType = ?",showNum, clickNum ,costMoney,dt, channelType);
-    }
-
-    //临时添加用户（临时用)
-    public void addTempUser()
-    {
-        String  sql = "select accountid, logintime, ip from login order by logintime";
-        List newUsers = jdbcTemplate.queryForList(sql);
-
-        Iterator it = newUsers.iterator();
-
-        while(it.hasNext())
-        {
-            Map userMap = (Map) it.next();
-
-            String id = (String)userMap.get("accountid");
-
-            String sq = "select count(*) from user where userId = ?";
-
-            Integer num = jdbcTemplate.queryForObject(sq, Integer.class, id);
-
-            int numValue = num == null ? 0 : num.intValue();
-
-            if (numValue > 0)
-                continue;
-
-            jdbcTemplate.update("INSERT INTO user(userId,serverDate) VALUES (?,?)",userMap.get("accountid"),userMap.get("logintime"));
-            System.out.println("one data");
-        }
-    }
-
-    public void addTempRate()
-    {
-        long startTime = System.currentTimeMillis() - 10 * 24 * 60 * 60 * 1000;
-        long endTime = System.currentTimeMillis();
-
-
-    }
-    //临时计算留存
-    //留存率(-1代表暂无数据)
-    public int getTempRemainRate(Date date, int days)
-    {
-        String dt = sdf.format(date);
-        String sql;
-        List newUsers;
-
-        sql = "select * from user where serverDate = ?";
-        newUsers = jdbcTemplate.queryForList(sql, dt);
-
-        System.out.println("userLen: " + newUsers.size());
-
-        if (newUsers.size() <= 0)
-            return  - 1;
-
-        Iterator it = newUsers.iterator();
-        int remainNum = 0;
-
-        while(it.hasNext())
-        {
-            Map<String, Object> userMap = (Map<String, Object>) it.next();
-
-//            Date rd = (Date)userMap.get("serverDate");
-//            Date dd = new Date(rd.getTime() + (days - 1)*24*60*60*1000);
-//            String ld = sdf.format(dd);
-
-            //sql = "select count(accountid) from login where accountid = ? and datediff(loginDate, ?) = ?";
-
-            sql = "select count(*) from login where accountid = ? and loginDate = (regDate + ?)";
-            //sql = "select count(*) from login where accountid = ? and loginDate = ?";
-            Integer num = jdbcTemplate.queryForObject(sql, Integer.class, userMap.get("userId"), days - 1);
-            //Integer num = jdbcTemplate.queryForObject(sql, Integer.class, userMap.get("userId"), ld);
-
-            if (num > 0)
-                System.out.println("num.... " + days + " " + num);
-
-            int numValue = num == null ? 0 : num.intValue();
-
-            if (numValue > 0)
-                remainNum++;
-        }
-
-        return (int)((float) remainNum / (float)newUsers.size() * 100);
-    }
-
-    //临时注册用户（篮球)
-    public int getTempUserNum(Date date)
-    {
-        String dt = sdf.format(date);
-
-        String sq = "select count(*) from user where serverDate = ?";
-
-        Integer num = jdbcTemplate.queryForObject(sq, Integer.class, dt);
-
-        int numValue = num == null ? 0 : num.intValue();
-
-        return numValue;
-
-    }
-
-    public void saveTempRemainRate(Date date, int regNum, int remain2, int remain3, int remain4, int remain5, int remain6, int remain7, int remain8, int remain9, int remain10, int remain11, int remain12, int remain13, int remain14, int remain15)
-    {
-        String dt = sdf.format(date);
-
-        String sq = "select count(*) from remain where date = ?";
-
-        Integer num = jdbcTemplate.queryForObject(sq, Integer.class, dt);
-
-        int numValue = num == null ? 0 : num.intValue();
-
-        if (numValue > 0)
-        {
-             jdbcTemplate.update("UPDATE remain set regNum = ?, remain2 = ?, remain3 = ?, remain4 = ?, remain5 = ?, remain6 = ?, " +
-                     "remain7 = ?, remain8 = ?, remain9 = ?, remain10 = ?, remain11 = ?, remain12 = ?, remain13 = ?, remain14 = ?," +
-                     " remain15 = ? where date = ?", regNum, remain2, remain3, remain4, remain5, remain6, remain7, remain8, remain9, remain10,remain11, remain12, remain13, remain14, remain15,dt);
-        }
-        else
-        {
-            jdbcTemplate.update("INSERT INTO remain(date, regNum, remain2, remain3,remain4, remain5, remain6,remain7, remain8, remain9," +
-                    "remain10, remain11, remain12,remain13, remain14, remain15) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", date, regNum, remain2, remain3, remain4, remain5, remain6, remain7, remain8, remain9, remain10,remain11, remain12, remain13, remain14, remain15);
-        }
-    }
-
-    public void saveTempRemainRate2(Date date, int regNum, int remain, int days)
-    {
-        String dt = sdf.format(date);
-
-        String sq = "select count(*) from remain where date = ?";
-
-        Integer num = jdbcTemplate.queryForObject(sq, Integer.class, dt);
-
-        int numValue = num == null ? 0 : num.intValue();
-
-        String column = "remain" + days;
-        if (numValue > 0)
-        {
-            jdbcTemplate.update("UPDATE remain set regNum = ?, ? = ? where date = ?", regNum,column,remain,dt);
-        }
-        else
-        {
-            jdbcTemplate.update("INSERT INTO remain(date, regNum, ?) VALUES (?,?,?)", column,date, regNum, remain);
-        }
-    }
-
     private String getDeviceBaseTbName(String appId)
     {
         return "device_base_" + appId;
@@ -1216,6 +1220,26 @@ public class ReportDao
     private String getUserPayTbName(String appId)
     {
         return "user_pay_" + appId;
+    }
+
+    private String getLtvTbName(String appId)
+    {
+        return "ltv_" + appId;
+    }
+
+    private String getRoiTbName(String appId)
+    {
+        return "roi_" + appId;
+    }
+
+    private String getPayConversionTbName(String appId)
+    {
+        return "pay_conversion_" + appId;
+    }
+
+    private String getRemainTbName(String appId)
+    {
+        return "remain_" + appId;
     }
 
 }

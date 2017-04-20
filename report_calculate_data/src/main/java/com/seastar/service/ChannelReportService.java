@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface ChannelReportService
 {
-    List<ChannelReportModel> doGetChannelReportListByDay(ChannelReportReq req);
-    List<ChannelReportModel> doGetChannelReportListByRange(ChannelReportReq req);
-    AdDetailsRsp doAddAdDetails(AdDetailsReq req);
+//    List<ChannelReportModel> doGetChannelReportListByDay(ChannelReportReq req);
+//    List<ChannelReportModel> doGetChannelReportListByRange(ChannelReportReq req);
+//    AdDetailsRsp doAddAdDetails(AdDetailsReq req);
 }

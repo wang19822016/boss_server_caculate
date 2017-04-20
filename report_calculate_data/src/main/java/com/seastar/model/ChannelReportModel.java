@@ -13,26 +13,27 @@ public class ChannelReportModel
     private String channelType;
     private int showNum;
     private int clickNum;
-    private int cpc;
-    private int cpm;
+    private float cpc;
+    private float cpm;
     private int installNum;
-    private int cpi;
+    private float cpi;
     private int validNum;
-    private int clickRate;
-    private int installRate;
-    private int regRate;
-    private int validRate;
-    private int roi;
+    private float clickRate;
+    private float installRate;
+    private float regRate;
+    private float validRate;
+    private float roi;
+    private float grossIncome;
     private float costMoney;
-    private int remain2;
-    private int remain3;
-    private int remain7;
-    private int remain30;
+    private float remain2;
+    private float remain3;
+    private float remain7;
+    private float remain30;
     private float payMoney;
     private int payNum;
-    private int payRate;
-    private int arpu;
-    private int arppu;
+    private float payRate;
+    private float arpu;
+    private float arppu;
 
     public void toObject(Map<String, Object> map)
     {
@@ -41,27 +42,28 @@ public class ChannelReportModel
         channelType = (String) map.get("channelType");
         showNum = (int)map.get("showNum");
         clickNum = (int)map.get("clickNum");
-        cpc = (int)map.get("cpc");
-        cpm = (int)map.get("cpm");
+        cpc = (float)map.get("cpc");
+        cpm = (float)map.get("cpm");
         installNum = (int)map.get("installNum");
-        cpi = (int)map.get("cpi");
+        cpi = (float)map.get("cpi");
         validNum = (int)map.get("validNum");
-        clickRate = (int)map.get("clickRate");
-        installRate = (int)map.get("installRate");
-        regRate = (int)map.get("regRate");
-        validRate = (int)map.get("validRate");
-        roi = (int)map.get("roi");
+        clickRate = (float)map.get("clickRate");
+        installRate = (float)map.get("installRate");
+        regRate = (float)map.get("regRate");
+        validRate = (float)map.get("validRate");
+        roi = (float)map.get("roi");
+        grossIncome = (float)map.get("grossIncome");
         costMoney = (float)map.get("costMoney");
-        remain2 = (int)map.get("remain2");
-        remain3 = (int)map.get("remain3");
-        remain7 = (int)map.get("remain7");
-        remain30 = (int)map.get("remain30");
+        remain2 = (float)map.get("remain2");
+        remain3 = (float)map.get("remain3");
+        remain7 = (float)map.get("remain7");
+        remain30 = (float)map.get("remain30");
 
         payMoney = (float)map.get("payMoney");
         payNum = (int)map.get("payNum");
-        payRate = (int)map.get("payRate");
-        arpu = (int)map.get("arpu");
-        arppu = (int)map.get("arppu");
+        payRate = (float)map.get("payRate");
+        arpu = (float)map.get("arpu");
+        arppu = (float)map.get("arppu");
     }
 
     public long getId() {
@@ -104,19 +106,19 @@ public class ChannelReportModel
         this.clickNum = clickNum;
     }
 
-    public int getCpc() {
+    public float getCpc() {
         return cpc;
     }
 
-    public void setCpc(int cpc) {
+    public void setCpc(float cpc) {
         this.cpc = cpc;
     }
 
-    public int getCpm() {
+    public float getCpm() {
         return cpm;
     }
 
-    public void setCpm(int cpm) {
+    public void setCpm(float cpm) {
         this.cpm = cpm;
     }
 
@@ -128,11 +130,11 @@ public class ChannelReportModel
         this.installNum = installNum;
     }
 
-    public int getCpi() {
+    public float getCpi() {
         return cpi;
     }
 
-    public void setCpi(int cpi) {
+    public void setCpi(float cpi) {
         this.cpi = cpi;
     }
 
@@ -144,44 +146,52 @@ public class ChannelReportModel
         this.validNum = validNum;
     }
 
-    public int getClickRate() {
+    public float getClickRate() {
         return clickRate;
     }
 
-    public void setClickRate(int clickRate) {
+    public void setClickRate(float clickRate) {
         this.clickRate = clickRate;
     }
 
-    public int getInstallRate() {
+    public float getInstallRate() {
         return installRate;
     }
 
-    public void setInstallRate(int installRate) {
+    public void setInstallRate(float installRate) {
         this.installRate = installRate;
     }
 
-    public int getRegRate() {
+    public float getRegRate() {
         return regRate;
     }
 
-    public void setRegRate(int regRate) {
+    public void setRegRate(float regRate) {
         this.regRate = regRate;
     }
 
-    public int getValidRate() {
+    public float getValidRate() {
         return validRate;
     }
 
-    public void setValidRate(int validRate) {
+    public void setValidRate(float validRate) {
         this.validRate = validRate;
     }
 
-    public int getRoi() {
+    public float getRoi() {
         return roi;
     }
 
-    public void setRoi(int roi) {
+    public void setRoi(float roi) {
         this.roi = roi;
+    }
+
+    public float getGrossIncome() {
+        return grossIncome;
+    }
+
+    public void setGrossIncome(float grossIncome) {
+        this.grossIncome = grossIncome;
     }
 
     public float getCostMoney() {
@@ -192,35 +202,35 @@ public class ChannelReportModel
         this.costMoney = costMoney;
     }
 
-    public int getRemain2() {
+    public float getRemain2() {
         return remain2;
     }
 
-    public void setRemain2(int remain2) {
+    public void setRemain2(float remain2) {
         this.remain2 = remain2;
     }
 
-    public int getRemain3() {
+    public float getRemain3() {
         return remain3;
     }
 
-    public void setRemain3(int remain3) {
+    public void setRemain3(float remain3) {
         this.remain3 = remain3;
     }
 
-    public int getRemain7() {
+    public float getRemain7() {
         return remain7;
     }
 
-    public void setRemain7(int remain7) {
+    public void setRemain7(float remain7) {
         this.remain7 = remain7;
     }
 
-    public int getRemain30() {
+    public float getRemain30() {
         return remain30;
     }
 
-    public void setRemain30(int remain30) {
+    public void setRemain30(float remain30) {
         this.remain30 = remain30;
     }
 
@@ -240,29 +250,27 @@ public class ChannelReportModel
         this.payNum = payNum;
     }
 
-    public int getPayRate() {
+    public float getPayRate() {
         return payRate;
     }
 
-    public void setPayRate(int payRate) {
+    public void setPayRate(float payRate) {
         this.payRate = payRate;
     }
 
-    public int getArpu() {
+    public float getArpu() {
         return arpu;
     }
 
-    public void setArpu(int arpu) {
+    public void setArpu(float arpu) {
         this.arpu = arpu;
     }
 
-    public int getArppu() {
+    public float getArppu() {
         return arppu;
     }
 
-    public void setArppu(int arppu) {
+    public void setArppu(float arppu) {
         this.arppu = arppu;
     }
-
-
 }

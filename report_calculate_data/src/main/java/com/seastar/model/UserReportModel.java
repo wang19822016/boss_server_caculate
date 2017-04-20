@@ -17,18 +17,18 @@ public class UserReportModel
     private int dou;
     private float payMoney;
     private int payNum;
-    private int payRate;
+    private float payRate;
     private float newUserPayMoney;
     private int newUserPayNum;
-    private int newUserPayRate;
-    private int arpu;
-    private int arppu;
-    private int remain2;
-    private int remain3;
-    private int remain7;
-    private int remain30;
+    private float newUserPayRate;
+    private float arpu;
+    private float arppu;
+    private float remain2;
+    private float remain3;
+    private float remain7;
+    private float remain30;
     private int avgOnlineNum;
-    private int avgOnlineTime;
+    private float avgOnlineTime;
 
     public long getId() {
         return id;
@@ -102,11 +102,11 @@ public class UserReportModel
         this.payNum = payNum;
     }
 
-    public int getPayRate() {
+    public float getPayRate() {
         return payRate;
     }
 
-    public void setPayRate(int payRate) {
+    public void setPayRate(float payRate) {
         this.payRate = payRate;
     }
 
@@ -126,59 +126,59 @@ public class UserReportModel
         this.newUserPayNum = newUserPayNum;
     }
 
-    public int getNewUserPayRate() {
+    public float getNewUserPayRate() {
         return newUserPayRate;
     }
 
-    public void setNewUserPayRate(int newUserPayRate) {
+    public void setNewUserPayRate(float newUserPayRate) {
         this.newUserPayRate = newUserPayRate;
     }
 
-    public int getArpu() {
+    public float getArpu() {
         return arpu;
     }
 
-    public void setArpu(int arpu) {
+    public void setArpu(float arpu) {
         this.arpu = arpu;
     }
 
-    public int getArppu() {
+    public float getArppu() {
         return arppu;
     }
 
-    public void setArppu(int arppu) {
+    public void setArppu(float arppu) {
         this.arppu = arppu;
     }
 
-    public int getRemain2() {
+    public float getRemain2() {
         return remain2;
     }
 
-    public void setRemain2(int remain2) {
+    public void setRemain2(float remain2) {
         this.remain2 = remain2;
     }
 
-    public int getRemain3() {
+    public float getRemain3() {
         return remain3;
     }
 
-    public void setRemain3(int remain3) {
+    public void setRemain3(float remain3) {
         this.remain3 = remain3;
     }
 
-    public int getRemain7() {
+    public float getRemain7() {
         return remain7;
     }
 
-    public void setRemain7(int remain7) {
+    public void setRemain7(float remain7) {
         this.remain7 = remain7;
     }
 
-    public int getRemain30() {
+    public float getRemain30() {
         return remain30;
     }
 
-    public void setRemain30(int remain30) {
+    public void setRemain30(float remain30) {
         this.remain30 = remain30;
     }
 
@@ -190,11 +190,11 @@ public class UserReportModel
         this.avgOnlineNum = avgOnlineNum;
     }
 
-    public int getAvgOnlineTime() {
+    public float getAvgOnlineTime() {
         return avgOnlineTime;
     }
 
-    public void setAvgOnlineTime(int avgOnlineTime) {
+    public void setAvgOnlineTime(float avgOnlineTime) {
         this.avgOnlineTime = avgOnlineTime;
     }
 
@@ -209,17 +209,17 @@ public class UserReportModel
         dou = (int)map.get("dou");
         payMoney = (float)map.get("payMoney");
         payNum = (int)map.get("payNum");
-        payRate = (int)map.get("payRate");
+        payRate = (float)map.get("payRate");
         newUserPayMoney = (float)map.get("newUserPayMoney");
         newUserPayNum = (int)map.get("newUserPayNum");
-        newUserPayRate = (int)map.get("newUserPayRate");
-        arpu = (int)map.get("arpu");
-        arppu = (int)map.get("arppu");
-        remain2 = (int)map.get("remain2");
-        remain3 = (int)map.get("remain3");
-        remain7 = (int)map.get("remain7");
-        remain30 = (int)map.get("remain30");
+        newUserPayRate = (float)map.get("newUserPayRate");
+        arpu = (float)map.get("arpu");
+        arppu = (float)map.get("arppu");
+        remain2 = (float)map.get("remain2");
+        remain3 = (float)map.get("remain3");
+        remain7 = (float)map.get("remain7");
+        remain30 = (float)map.get("remain30");
         avgOnlineNum = (int)map.get("avgOnlineNum");
-        avgOnlineTime = (int)map.get("avgOnlineTime");
+        avgOnlineTime = (float)map.get("avgOnlineTime");
     }
 }

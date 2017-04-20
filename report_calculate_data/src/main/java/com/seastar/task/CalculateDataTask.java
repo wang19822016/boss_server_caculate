@@ -26,12 +26,59 @@ public class CalculateDataTask
     @Autowired
     private ReportDao reportDao;
 
+    private long dayTime = (1000 * 3600 * 24);
 
-    //每隔XX时间更新新据
+    //昨日数据更新, 每天北京时间8点执行一次
+    @Scheduled(cron = "0 0 8 ? * *")
+    public void UpdateDayData()
+    {
+        List<String> appList = reportDao.getApps();
+
+        long startTime = System.currentTimeMillis();
+        System.out.println("DayDataStart: " + new Date(startTime));
+
+        Date dt = new Date(startTime - dayTime);
+
+        for (int i = 0; i < appList.size(); i++)
+        {
+            String appId = appList.get(i);
+
+            UpdateUserData(dt, appId);          //日报
+            UpdateChannelData(dt, appId);       //渠道
+            UpdateChannelLastData(appId);       //渠道持续累计数据
+            UpdateRemain(dt, appId);            //留存
+            UpdateLTV(dt, appId);               //更新LTV
+            UpdateROI(dt, appId);               //更新ROI
+            UpdatePayConversion(dt, appId);     //更新付费转化
+        }
+
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("DayDataEnd: " + new Date(endTime));
+        System.out.println("DayDataTotalTime: " + (endTime - startTime)/1000);
+
+        System.out.println("DayReport_OK");
+    }
+
+    //每N时更新数据
+    //@Scheduled(fixedDelay = 1000 * 60 * 60, initialDelay = 1)
+    public void UpdateHourData()
+    {
+        UpdateDayData();
+    }
+
+    //每N分钟更新数据
+    //@Scheduled(fixedDelay = 1000 * 60 * 5, initialDelay = 1)
+    public void UpdateMinuteData()
+    {
+        UpdateDayData();
+    }
+
+    //更新测试
     //@Scheduled(fixedRate = 30000)         //30秒测试
     //@Scheduled(cron = "0 19 20 ? * *")    //每天20点19执行一次
-    //@Scheduled(fixedDelay = 1000 * 60 * 5, initialDelay = 10000)
-    public void UpdateHourReport()
+    @Scheduled(fixedDelay = 1000 * 60 * 5, initialDelay = 1)
+    public void UpdateTest()
     {
         List<String> appList = reportDao.getApps();
 
@@ -39,17 +86,21 @@ public class CalculateDataTask
         System.out.println("start: " + startTime);
 
         //更新当天的数据 加for循环主要是用于测试
-        for (int day = 0; day < 2; day++)
+        for (int day = 0; day < 7; day++)
         {
-            Date dt = new Date(System.currentTimeMillis() + dayTime * day);
+            Date dt = new Date(System.currentTimeMillis() - dayTime * day);
 
             for (int i = 0; i < appList.size(); i++)
             {
                 String appId = appList.get(i);
 
-                UpdateUserData(dt, appId);       //用户综合数据
-
-                UpdateChannelData(dt, appId);    //渠道综合数据
+                UpdateUserData(dt, appId);          //日报
+                UpdateChannelData(dt, appId);       //渠道
+                UpdateChannelLastData(appId);       //渠道持续累计数据
+                UpdateRemain(dt, appId);            //留存
+                UpdateLTV(dt, appId);               //更新LTV
+                UpdateROI(dt, appId);               //更新ROI
+                UpdatePayConversion(dt, appId);     //更新付费转化
             }
         }
 
@@ -57,42 +108,54 @@ public class CalculateDataTask
         System.out.println("totalTime: " + (endTime - startTime) / 1000);
     }
 
-    //昨日完整数据(每天国内8点清算)
-    //@Scheduled(fixedRate = 60000)       //60秒测试
-    //@Scheduled(cron = "0 0 9 ? * *")
-    @Scheduled(fixedDelay = 1000 * 60 * 5  , initialDelay = 5000)
-    public void UpdateReport()
+
+    /****************************更新数据如下****************************************/
+
+    //日报
+    private void UpdateUserData(Date dt, String appId)
     {
-        List<String> appList = reportDao.getApps();
+        UserReportModel urm = reportDao.createUserReportData(dt, appId);
+        boolean isHave = reportDao.isHaveUserReportData(dt, appId);
+
+        if (isHave)
+            reportDao.updateUserReportData(urm, appId);
+        else
+            reportDao.saveUserReportData(urm, appId);
+    }
+
+    //渠道
+    private void UpdateChannelData(Date date, String appId)
+    {
+        List<String> list = reportDao.getChannelListByDate(date, appId);
 
         long startTime = System.currentTimeMillis();
-        System.out.println("start: " + startTime);
 
-        System.out.println("aa: " + new Date().toString());
-        for (int day = 0; day < 1; day++)
+        for (int i = 0; i < list.size(); i++)
         {
-            Date dt = new Date(System.currentTimeMillis() + dayTime * day);   //*3测试用 模拟3天后的计算
-
-            for (int i = 0; i < appList.size(); i++)
+            String channelType = list.get(i);
+            if (channelType == null || channelType.isEmpty())
             {
-                String appId = appList.get(i);
-
-                UpdateUserData(dt, appId);          //用户综合数据
-                UpdateRemain(dt, appId);            //用户留存
-                UpdateChannelData(dt, appId);       //渠道数据
-                UpdateChannelIncome(appId);         //渠道总收入
-                System.out.println("oneDay: " + (System.currentTimeMillis() - startTime)/1000);
+                System.out.println("Channel-ChannelType Unknown!!!");
+                continue;
             }
+
+            ChannelReportModel crm = reportDao.createChannelBaseData(date, appId, channelType);
+
+            boolean isHave = reportDao.isHaveChannelData(appId, date, channelType);
+
+            if (isHave)
+                reportDao.updateChannelBaseData(crm, appId);
+            else
+                reportDao.saveChannelBaseData(crm, appId);
         }
 
         long endTime = System.currentTimeMillis();
-        System.out.println("totalTime: " + (endTime - startTime)/1000);
 
-        System.out.println("Report_OK");
+        System.out.println("ChannelTotalTime: " + (endTime - startTime)/1000);
     }
 
     /**
-     * 留存率
+     * 更新留存
      * 梯子形计算 如下（数字2代表次日留存，3代表3日留存..)
      * 如果是1月5日进行清算 则需要计算的为1-1的6日留存,1-2日的5日留存 以此类推..
      * 1-1  23456
@@ -100,9 +163,7 @@ public class CalculateDataTask
      * 1-3  234
      * 1-4  23
      * 1-5  2
-     * 类似留存,LTV等需要持续计算的单独封装。
      * */
-    private long dayTime = (1000 * 3600 * 24);
     private void UpdateRemain(Date dt, String appId)
     {
         DailyModel dailyModel = dailyDao.findMinDateData(appId);
@@ -120,130 +181,106 @@ public class CalculateDataTask
             if (days <= 1)
                 continue;
 
-            //以后留存率会有单独报表则按照days存储就可以了（如4日，5日留存等）
+            //当天新增用户的N天留存率
+            Date currentDay = new Date(time);
+            float raminRate = reportDao.getRemainRate(currentDay, days, appId, ChannelType.ALL);
+
+            //每日留存
+            if (raminRate > 0)
+                reportDao.updateRemainRate(currentDay, days, (float)raminRate / 100, appId);
+
             if (days == 2 || days == 3 || days == 7 || days == 30)
             {
-                //当天新增用户的N天留存率
-                Date currentDay = new Date(time);
-                int raminRate = reportDao.getRemainRate(currentDay, days, appId, ChannelType.ALL);
-
-                //0代表当天数据为null
+                //日报留存
                 if (raminRate > 0)
-                    reportDao.updateRemainRate(currentDay, days, raminRate, appId);
+                    reportDao.updateUserReportRemainRate(currentDay, days, raminRate, appId);
+
+                //渠道留存(当日所有)
+                if (raminRate > 0)
+                    reportDao.UpdateAllChannelRemain(appId, currentDay, days);
             }
         }
     }
 
-    //用户综合数据
-    private void UpdateUserData(Date dt, String appId)
+    //更新渠道持续数据（涉及持续收入带来的变化数据 如cpi, roi, 付费, 付费率等)
+    private void UpdateChannelLastData(String appId)
     {
-        UserReportModel urm = reportDao.createUserReportData(dt, appId);
-        boolean isHave = reportDao.isHaveUserReportData(dt, appId);
-
-        if (isHave)
-            reportDao.updateUserReportData(urm, appId);
-        else
-            reportDao.saveUserReportData(urm, appId);
+        reportDao.UpdateChannelLastData(appId);
     }
 
-    //渠道综合数据
-    private void UpdateChannelData(Date date, String appId)
+    //更新N日LTV
+    private void UpdateLTV(Date dt, String appId)
     {
-        List<String> list = reportDao.getChannelListByDate(date, appId);
+        DailyModel dailyModel = dailyDao.findMinDateData(appId);
 
-        long startTime = System.currentTimeMillis();
-        System.out.println("dayStart: " + startTime);
+        if (dailyModel == null)
+            return;
 
-        for (int i = 0; i < list.size(); i++)
+        long startTime = dailyModel.getLoginTime().getTime() / dayTime * dayTime;
+
+        long currentTime = dt.getTime() / dayTime * dayTime;
+
+        for (long time = startTime; time <= currentTime; time+=dayTime)
         {
-            String channelType = list.get(i);
-            if (channelType == null || channelType.isEmpty())
-            {
-                System.out.println("ChannelType Unknown!!!");
-                continue;
-            }
+            int days = (int) ((currentTime - time) / dayTime);
 
-            ChannelReportModel crm = reportDao.createChannelReportModelByChannel(date, appId, channelType);
+            Date currentDay = new Date(time);
 
-            boolean isHave = reportDao.isHaveChannelReportData(appId, date, channelType);
+            float ltv = reportDao.getLTV(currentDay, days, appId, ChannelType.ALL);
 
-            if (isHave)
-                reportDao.updateChannelReportData(crm, appId);
-            else
-                reportDao.saveChannelReportData(crm, appId);
-
-            System.out.println("oneChannel: " + (System.currentTimeMillis() - startTime)/1000);
+            reportDao.updateLTV(currentDay, days+1, ltv, appId);
         }
-
-        long endTime = System.currentTimeMillis();
-
-        System.out.println("dayTotalTime: " + (endTime - startTime)/1000);
     }
 
-    //更新渠道累计收入
-    private void UpdateChannelIncome(String appId)
+    //更新N日ROI
+    private void UpdateROI(Date dt, String appId)
     {
-        reportDao.UpdateChannelIncome(appId);
-    }
+        DailyModel dailyModel = dailyDao.findMinDateData(appId);
 
-    //@Scheduled(fixedDelay = 1000 * 60 * 50, initialDelay = 1)
-    public void UpdateTempReport()
-    {
-        reportDao.addTempUser();
-    }
+        if (dailyModel == null)
+            return;
 
-    //@Scheduled(fixedDelay = 1000 * 60 * 50, initialDelay = 1)
-    //@Scheduled(cron = "0 47 11 ? * *")
-    public void AddTempRemain()
-    {
-        long startTime = System.currentTimeMillis();
+        long startTime = dailyModel.getLoginTime().getTime() / dayTime * dayTime;
 
-        System.out.println("start: " + startTime);
+        long currentTime = dt.getTime() / dayTime * dayTime;
 
-        for (int day = -3; day < 0; day++)
+        for (long time = startTime; time <= currentTime; time+=dayTime)
         {
-            Date dt = new Date(System.currentTimeMillis() + dayTime * day);   //*3测试用 模拟3天后的计算
+            int days = (int) ((currentTime - time) / dayTime);
 
-            int regNum = reportDao.getTempUserNum(dt);
-            if (regNum <= 0)
-                continue;
+            Date currentDay = new Date(time);
 
-            int remain2 = reportDao.getTempRemainRate(dt,2);
-            //System.out.println("linedata");
-            int remain3 = reportDao.getTempRemainRate(dt,3);
-//            int remain4 = reportDao.getTempRemainRate(dt,4);
-//            int remain5 = reportDao.getTempRemainRate(dt,5);
-//            int remain6 = reportDao.getTempRemainRate(dt,6);
-//            int remain7 = reportDao.getTempRemainRate(dt,7);
-//            int remain8 = reportDao.getTempRemainRate(dt,8);
-//            int remain9 = reportDao.getTempRemainRate(dt,9);
-//            int remain10 = reportDao.getTempRemainRate(dt,10);
-//            int remain11 = reportDao.getTempRemainRate(dt,11);
-//            int remain12 = reportDao.getTempRemainRate(dt,12);
-//            int remain13 = reportDao.getTempRemainRate(dt,13);
-//            int remain14 = reportDao.getTempRemainRate(dt,14);
-//            int remain15 = reportDao.getTempRemainRate(dt,15);
+            float grossIncome = reportDao.getGrossIncome(currentDay, days, appId, ChannelType.ALL);
 
+            float cost = reportDao.getCostMoney(currentDay, appId, ChannelType.ALL);
 
-            int remain4 = 0;
-            int remain5 = 0;
-            int remain6 = 0;
-            int remain7 = 0;
-            int remain8 = 0;
-            int remain9 = 0;
-            int remain10 = 0;
-            int remain11 = 0;
-            int remain12 = 0;
-            int remain13 = 0;
-            int remain14 = 0;
-            int remain15 = 0;
-
-            reportDao.saveTempRemainRate(dt, regNum, remain2, remain3,remain4,remain5,remain6,remain7,remain8,remain9,remain10,remain11,remain12,remain13,remain14,remain15);
-            System.out.println("oneDayRemain: " + (System.currentTimeMillis() - startTime)/1000);
+            reportDao.updateROI(currentDay, days+1, grossIncome, cost, appId);
         }
+    }
 
-        long endTime = System.currentTimeMillis();
+    //更新付费转化
+    private void UpdatePayConversion(Date dt, String appId)
+    {
+        DailyModel dailyModel = dailyDao.findMinDateData(appId);
 
-        System.out.println("totalTime: " + (endTime - startTime)/1000);
+        if (dailyModel == null)
+            return;
+
+        long startTime = dailyModel.getLoginTime().getTime() / dayTime * dayTime;       //统一日期取整（如1-1 08:00:00)
+
+        long currentTime = dt.getTime() / dayTime * dayTime;
+
+        for (long time = startTime; time <= currentTime; time+=dayTime)
+        {
+            int days = (int) ((currentTime - time) / dayTime);
+
+            Date currentDay = new Date(time);
+
+            int dnu = reportDao.getDnu(currentDay, appId);
+            int dnuPayNum = reportDao.getDnuPayNumByDays(currentDay, days, appId, ChannelType.ALL);
+            int dnuPayTimes = reportDao.getDnuPayTimesByDays(currentDay, days, appId, ChannelType.ALL);
+
+            reportDao.updatePayConversion(currentDay, days+1, dnu, dnuPayNum, dnuPayTimes, appId);
+        }
     }
 }
