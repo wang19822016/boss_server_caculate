@@ -23,7 +23,6 @@ public class ChannelReportModel
     private float regRate;
     private float validRate;
     private float roi;
-    private float grossIncome;
     private float costMoney;
     private float remain2;
     private float remain3;
@@ -52,7 +51,7 @@ public class ChannelReportModel
         regRate = (float)map.get("regRate");
         validRate = (float)map.get("validRate");
         roi = (float)map.get("roi");
-        grossIncome = (float)map.get("grossIncome");
+
         costMoney = (float)map.get("costMoney");
         remain2 = (float)map.get("remain2");
         remain3 = (float)map.get("remain3");
@@ -184,14 +183,6 @@ public class ChannelReportModel
 
     public void setRoi(float roi) {
         this.roi = roi;
-    }
-
-    public float getGrossIncome() {
-        return grossIncome;
-    }
-
-    public void setGrossIncome(float grossIncome) {
-        this.grossIncome = grossIncome;
     }
 
     public float getCostMoney() {
