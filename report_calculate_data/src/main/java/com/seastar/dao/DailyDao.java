@@ -2,6 +2,7 @@ package com.seastar.dao;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.seastar.common.PlatformType;
 import com.seastar.model.DailyModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -33,7 +34,7 @@ public class DailyDao
     }
 
     //最早日期数据(当前游戏报表)
-    public DailyModel findMinDateData(String appId)
+    public DailyModel findMinDateData(String appId, String platform)
     {
         DailyModel dailyModel = null;
 
@@ -41,9 +42,19 @@ public class DailyDao
         {
             String tableName = "daily_data" + "_" +  appId;
 
-            String sql = "select * from " + tableName + " ORDER BY loginTime ASC LIMIT 1";
+            String sql;
+            Map<String,Object> result;
 
-            Map<String,Object> result = jdbcTemplate.queryForMap(sql);
+            if (platform == PlatformType.ALL)
+            {
+                sql = "select * from " + tableName + " ORDER BY loginTime ASC LIMIT 1";
+                result  = jdbcTemplate.queryForMap(sql);
+            }
+            else
+            {
+                sql = "select * from " + tableName + " WHERE platform = ? ORDER BY loginTime ASC LIMIT 1";
+                result  = jdbcTemplate.queryForMap(sql, platform);
+            }
 
             dailyModel = objectMapper.readValue(objectMapper.writeValueAsString(result), DailyModel.class);
         }

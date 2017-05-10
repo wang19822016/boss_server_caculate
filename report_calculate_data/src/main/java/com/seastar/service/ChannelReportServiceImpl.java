@@ -1,7 +1,6 @@
 package com.seastar.service;
 
 import com.seastar.common.ReturnCode;
-import com.seastar.dao.ReportDao;
 import com.seastar.entity.AdDetailsReq;
 import com.seastar.entity.AdDetailsRsp;
 import com.seastar.entity.ChannelReportReq;
