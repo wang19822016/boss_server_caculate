@@ -241,7 +241,8 @@ public class ReportDao2
             sql += " and platform = ?";
             params.add(platform);
         }
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
+
+        Float num = jdbcTemplate.queryForObject(sql, Float.class, params.toArray());
         return num == null ? 0 : num.floatValue();
     }
 
@@ -269,7 +270,7 @@ public class ReportDao2
             params.add(platform);
         }
 
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
+        Float num = jdbcTemplate.queryForObject(sql, Float.class, params.toArray());
         return num == null ? 0 : num.floatValue();
     }
 
@@ -370,7 +371,7 @@ public class ReportDao2
             params.add(platform);
         }
 
-        Integer num = jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
+        Float num = jdbcTemplate.queryForObject(sql, Float.class, params.toArray());
         return num == null ? 0 : num.floatValue();
     }
 
@@ -431,7 +432,7 @@ public class ReportDao2
             params.add(platform);
         }
 
-        Integer money = jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
+        Float money = jdbcTemplate.queryForObject(sql, Float.class, params.toArray());
         return money == null ? 0 : money.floatValue();
     }
 
@@ -512,7 +513,7 @@ public class ReportDao2
         String tableName = getUserLoginTbName(appId);
         String dt = sdf.format(date);
         String userSql = "select count(distinct userId) from " + tableName + " where regDate = ?";
-        String remainSql = "select count(distinct userId) from " + tableName + " where regDate = ? and serverDate = (regDate + ?)";
+        String remainSql = "select count(distinct userId) from " + tableName + " where regDate = ? and serverDate = (regDate + INTERVAL ? DAY)";
 
         List<Object> params1 = new ArrayList<Object>();
         List<Object> params2 = new ArrayList<Object>();
@@ -1157,7 +1158,7 @@ public class ReportDao2
 //            params.add(platform);
 //        }
 
-        Integer money = jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
+        Float money = jdbcTemplate.queryForObject(sql, Float.class, params.toArray());
         return money == null ? 0 : money.floatValue();
     }
 
@@ -1188,7 +1189,7 @@ public class ReportDao2
             params.add(platform);
         }
 
-        Integer payInteger = jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
+        Float payInteger = jdbcTemplate.queryForObject(sql, Float.class, params.toArray());
 
         return payInteger == null ? 0 : payInteger.floatValue();
     }

@@ -92,7 +92,7 @@ public class CalculateDataTask
         long startTime = System.currentTimeMillis();
         System.out.println("MinuteDataStart: " + new Date(startTime));
 
-        Date dt = new Date(startTime - dayTime);
+        Date dt = new Date(startTime);
 
         for (int i = 0; i < appList.size(); i++)
         {
@@ -140,23 +140,36 @@ public class CalculateDataTask
         System.out.println("start: " + startTime);
 
         //更新当天的数据 加for循环主要是用于测试
-        for (int day = -13; day <= 0; day++)
-        {
-
-            Date dt = new Date(System.currentTimeMillis() + dayTime * day);
-            for (int i = 0; i < appList.size(); i++)
-            {
+//        for (int day = -33; day <= 0; day++)
+//        {
+//
+//            Date dt = new Date(System.currentTimeMillis() + dayTime * day);
+//            for (int i = 0; i < appList.size(); i++)
+//            {
 //                String appId = appList.get(i);
-//                System.out.println("appId: " + appId);
-//                UpdateUserData(dt, appId);          //日报
-//                UpdateChannelData(dt, appId);       //渠道
-//                UpdateChannelLastData(appId);       //渠道持续累计数据
-//                UpdateRemain(dt, appId);            //留存
-//                UpdateLTV(dt, appId);               //更新LTV
-//                UpdateROI(dt, appId);               //更新ROI
-//                UpdatePayConversion(dt, appId);     //更新付费转化
-            }
-        }
+////                System.out.println("appId: " + appId);
+//                UpdateUserData(dt, appId, PlatformType.Android);          //Android日报
+//                UpdateUserData(dt, appId, PlatformType.IOS);              //Ios日报
+//
+//                UpdateChannelData(dt, appId, PlatformType.Android);       //Android渠道
+//                UpdateChannelData(dt, appId, PlatformType.IOS);           //IOS渠道
+//
+//                UpdateChannelLastData(appId, PlatformType.Android);       //Android渠道持续累计数据
+//                UpdateChannelLastData(appId, PlatformType.IOS);           //IOS渠道持续累计数据
+//
+//                UpdateRemain(dt, appId, PlatformType.Android);            //Android留存
+//                UpdateRemain(dt, appId, PlatformType.IOS);                //IOS留存
+//
+//                UpdateLTV(dt, appId, PlatformType.Android);               //Android更新LTV
+//                UpdateLTV(dt, appId, PlatformType.IOS);                   //IOS更新LTV
+//
+//                UpdateROI(dt, appId, PlatformType.Android);               //Android ROI
+//                UpdateROI(dt, appId, PlatformType.IOS);                   //IOS ROI
+//
+//                UpdatePayConversion(dt, appId, PlatformType.Android);     //Android付费转化
+//                UpdatePayConversion(dt, appId, PlatformType.IOS);         //IOS付费转化
+//            }
+//        }
 
         long endTime = System.currentTimeMillis();
         System.out.println("totalTime: " + (float)(endTime - startTime) / 1000);
